@@ -15,7 +15,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | ec97aa3 | |
 | 2 | Core math | Done | No | 2026-10-23 | 2026-10-23 | 920370e | |
 | 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
-| 4 | Genome and species v1 | Awaiting review | Yes (contact sheet) | 2026-10-23 | | b1e6dd6 | |
+| 4 | Genome and species v1 | Done | Yes (contact sheet) | 2026-10-23 | 2026-10-23 | b1e6dd6, f408a18 | |
 | 5 | Botanical style | Not started | Yes (look) | | | | |
 | 6 | Vines and the trellis | Not started | No | | | | |
 | 7 | Garden scale | Not started | No | | | | |
@@ -46,8 +46,8 @@ Tick items as they are verified. Add sub-items if a phase needs them.
 ### Phase 4: Genome and species v1
 - [x] `GENES` registry, sample, blend and mutate with bounds tests
 - [x] Daisy, rose and tulip species
-- [x] Contact sheet page
-- [ ] User feedback received on the contact sheet
+- [x] Contact sheet page with live 3D thumbnails
+- [x] User feedback received on the contact sheet and incorporated
 
 ### Phase 5: Botanical style
 - [ ] Normal and depth pass, ink edges, veins, wrap diffuse
