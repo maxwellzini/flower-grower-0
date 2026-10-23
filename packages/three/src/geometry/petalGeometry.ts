@@ -4,8 +4,8 @@ import { oklchToRgb, sampleWidthProfile } from '@flower-grower/core';
 
 export function buildPetalBaseGrid(
   shape: OrganShape,
-  uSegments = 10,
-  vSegments = 6,
+  uSegments = 18,
+  vSegments = 12,
 ): THREE.BufferGeometry {
   const positions: number[] = [];
   const uvs: number[] = [];
@@ -45,8 +45,8 @@ export function buildPetalBaseGrid(
 export function buildInstancedPetalGeometry(
   organs: readonly Organ[],
   shape: OrganShape,
-  uSegments = 10,
-  vSegments = 6,
+  uSegments = 18,
+  vSegments = 12,
 ): THREE.InstancedBufferGeometry {
   const base = buildPetalBaseGrid(shape, uSegments, vSegments);
   const instanced = new THREE.InstancedBufferGeometry();
@@ -63,14 +63,13 @@ export function buildInstancedPetalGeometry(
   const binormals = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const growthParams = new Float32Array(count * 4); // birth, grow, openDur, open0
-  const shapeParams = new Float32Array(count * 4);  // scale, cupDepth, curlTip, tilt
-  const curveParams = new Float32Array(count * 2);  // midribBend, reflex
+  const shapeParams = new Float32Array(count * 4); // scale, cupDepth, curlTip, tilt
+  const curveParams = new Float32Array(count * 4); // midribBend, reflex, width, baseNarrow
 
   for (let i = 0; i < count; i++) {
     const organ = organs[i]!;
     const i3 = i * 3;
     const i4 = i * 4;
-    const i2 = i * 2;
 
     origins[i3] = organ.origin[0];
     origins[i3 + 1] = organ.origin[1];
@@ -103,9 +102,11 @@ export function buildInstancedPetalGeometry(
     shapeParams[i4 + 2] = shape.curlTip;
     shapeParams[i4 + 3] = organ.rotation; // stored tilt
 
-    curveParams[i2] = shape.midribBend;
-    curveParams[i2 + 1] =
+    curveParams[i4] = shape.midribBend;
+    curveParams[i4 + 1] =
       shape.reflex * (organ.age !== undefined && organ.age >= 0 ? organ.age : 1.0);
+    curveParams[i4 + 2] = organ.width ?? 0.5;
+    curveParams[i4 + 3] = shape.baseNarrow;
   }
 
   instanced.setAttribute('iOrigin', new THREE.InstancedBufferAttribute(origins, 3));
@@ -113,9 +114,18 @@ export function buildInstancedPetalGeometry(
   instanced.setAttribute('iNormal', new THREE.InstancedBufferAttribute(normals, 3));
   instanced.setAttribute('iBinormal', new THREE.InstancedBufferAttribute(binormals, 3));
   instanced.setAttribute('iColor', new THREE.InstancedBufferAttribute(colors, 3));
-  instanced.setAttribute('iGrowthParams', new THREE.InstancedBufferAttribute(growthParams, 4));
-  instanced.setAttribute('iShapeParams', new THREE.InstancedBufferAttribute(shapeParams, 4));
-  instanced.setAttribute('iCurveParams', new THREE.InstancedBufferAttribute(curveParams, 2));
+  instanced.setAttribute(
+    'iGrowthParams',
+    new THREE.InstancedBufferAttribute(growthParams, 4),
+  );
+  instanced.setAttribute(
+    'iShapeParams',
+    new THREE.InstancedBufferAttribute(shapeParams, 4),
+  );
+  instanced.setAttribute(
+    'iCurveParams',
+    new THREE.InstancedBufferAttribute(curveParams, 4),
+  );
 
   return instanced;
 }

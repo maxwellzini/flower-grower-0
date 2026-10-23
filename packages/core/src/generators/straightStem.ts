@@ -25,7 +25,7 @@ export function straightStem(
   const tipRadius = params.tipRadius ?? 0.025;
   const noiseAmp = params.noiseAmp ?? 0.08;
   const noiseFreq = params.noiseFreq ?? 0.8;
-  const growSpeed = params.growSpeed ?? 1.5;
+  const growSpeed = params.growSpeed ?? 5.5;
 
   let origin: Vec3 = params.origin ?? [0, 0, 0];
   let target: Vec3 = [0, height, 0];

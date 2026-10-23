@@ -20,6 +20,7 @@ export const daisy: Species = {
     'petal.midribBend': { lo: 0.01, hi: 0.03 },
     'flower.whorlLayers': { lo: 1, hi: 2 },
     'flower.whorlTilt': { lo: 0.08, hi: 0.18 },
+    'flower.headScale': { lo: 0.95, hi: 1.05 },
     'flower.floretCount': { lo: 45, hi: 80 },
     'flower.centerDome': { lo: 0.03, hi: 0.055 },
     'color.petal': {

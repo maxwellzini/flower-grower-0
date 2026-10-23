@@ -54,6 +54,7 @@ export interface Organ {
   openDuration: number;
   openness0: number;
   age: number;
+  width?: number;
 }
 
 export type OrganTip = 'round' | 'point' | 'notch' | 'fringe';

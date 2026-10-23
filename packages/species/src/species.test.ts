@@ -59,6 +59,10 @@ describe('Species Archetypes and Plant Assembly', () => {
     // Tulip has exactly 6 tepals
     const tulipPetals = t.organs.filter((o) => o.type === 'petal');
     expect(tulipPetals.length).toBe(6);
+    for (const p of tulipPetals) {
+      expect(p.rotation).toBeGreaterThan(1.0);
+      expect(p.tangent[1]).toBeGreaterThan(0.8);
+    }
 
     // Rose has many layered petals (>= 30)
     const rosePetals = r.organs.filter((o) => o.type === 'petal');

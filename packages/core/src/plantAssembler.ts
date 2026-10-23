@@ -50,7 +50,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const tipRadius = Number(genome['stem.tipRadius'] ?? 0.022);
   const segments = Math.round(Number(genome['stem.segments'] ?? 18));
   const noiseAmp = Number(genome['stem.noiseAmp'] ?? 0.07);
-  const growSpeed = Number(genome['stem.growSpeed'] ?? 1.5);
+  const growSpeed = Number(genome['stem.growSpeed'] ?? 5.5);
 
   const stems = straightStem(
     options.guide,
@@ -108,6 +108,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const whorlRadius = Number(genome['flower.whorlRadius'] ?? 0.08);
   const headScale = Number(genome['flower.headScale'] ?? 1.0);
   const petalLength = Number(genome['petal.length'] ?? 0.85);
+  const petalWidth = Number(genome['petal.width'] ?? 0.45);
 
   const petalPlacements = whorls({
     count: petalCount,
@@ -122,9 +123,9 @@ export function growPlant(options: GrowPlantOptions): Plant {
     chroma: 0.03,
     hue: 75,
   };
-  const staggerAmount = Number(genome['growth.stagger'] ?? 0.12);
-  const petalGrowDur = Number(genome['growth.petalGrowDur'] ?? 0.6);
-  const petalOpenDur = Number(genome['growth.petalOpenDur'] ?? 0.8);
+  const staggerAmount = Number(genome['growth.stagger'] ?? 0.16);
+  const petalGrowDur = Number(genome['growth.petalGrowDur'] ?? 1.1);
+  const petalOpenDur = Number(genome['growth.petalOpenDur'] ?? 1.5);
 
   for (const p of petalPlacements) {
     const angle = p.angle;
@@ -181,7 +182,87 @@ export function growPlant(options: GrowPlantOptions): Plant {
       openDuration: petalOpenDur,
       openness0: 1.0,
       age: reflexFactor,
+      width: petalWidth * p.scale,
     });
+  }
+
+  // 4. Calyx Sepals (e.g. for Rose or Daisy)
+  const sepalCount = Math.round(Number(genome['flower.sepalCount'] ?? 0));
+  if (sepalCount > 0) {
+    shapes.push({
+      length: 1,
+      widthProfile: [0.18, 0.45, 0.75, 0.9, 0.7, 0.4, 0.15, 0.0],
+      tip: 'point',
+      tipSharpness: 0.8,
+      baseNarrow: 0.18,
+      cupDepth: 0.1,
+      curlTip: 0.35,
+      reflex: 0.6,
+      ruffle: 0.0,
+      ruffleFreq: 0.0,
+      midribBend: 0.0,
+      veinCount: 1,
+      veinDepth: 0.01,
+    });
+    const sepalShapeIdx = shapes.length - 1;
+    const sepalLength = petalLength * 0.65;
+    const sepalColor = (genome['color.stem'] as ColorGene | undefined) ?? {
+      light: 0.42,
+      chroma: 0.14,
+      hue: 135,
+    };
+
+    for (let i = 0; i < sepalCount; i++) {
+      const angle = (i * 2 * Math.PI) / sepalCount + 0.12;
+      const tilt = -0.35; // reflexing downward beneath the receptacle
+      const cosAngle = Math.cos(angle);
+      const sinAngle = Math.sin(angle);
+      const cosTilt = Math.cos(tilt);
+      const sinTilt = Math.sin(tilt);
+
+      const origin: Vec3 = [
+        stemTipPos[0] + cosAngle * whorlRadius * 0.75 * headScale,
+        stemTipPos[1] - 0.015,
+        stemTipPos[2] + sinAngle * whorlRadius * 0.75 * headScale,
+      ];
+
+      const tangent: Vec3 = [
+        cleanZero(cosAngle * cosTilt),
+        cleanZero(sinTilt),
+        cleanZero(sinAngle * cosTilt),
+      ];
+      const normal: Vec3 = [
+        cleanZero(-cosAngle * sinTilt),
+        cleanZero(cosTilt),
+        cleanZero(-sinAngle * sinTilt),
+      ];
+      const binormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
+
+      organs.push({
+        id: organId++,
+        type: 'sepal',
+        stemId: mainStem.id,
+        stemNode: tipNodeIndex,
+        origin,
+        tangent,
+        normal,
+        binormal,
+        shape: sepalShapeIdx,
+        scale: sepalLength * headScale,
+        rotation: tilt,
+        color: {
+          light: sepalColor.light,
+          chroma: sepalColor.chroma,
+          hue: sepalColor.hue,
+        },
+        birth: stemFinishTime,
+        growDuration: petalGrowDur * 0.65,
+        openDuration: petalOpenDur * 0.6,
+        openness0: 0.7,
+        age: 1.0,
+        width: 0.28,
+      });
+    }
   }
 
   // 4. Center Florets (disc)

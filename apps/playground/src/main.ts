@@ -121,7 +121,15 @@ function updateTelemetry(plant: Plant): void {
   scrubber.max = plant.duration.toFixed(3);
 }
 
-function loadPlant(): void {
+function frameCamera(): void {
+  if (!currentPlant) return;
+  const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
+  controls.target.set(0, tipY * 0.6, 0);
+  camera.position.set(1.6, tipY * 0.85 + 0.9, 5.0);
+  controls.update();
+}
+
+function loadPlant(refocus = false): void {
   if (currentHandle) {
     garden.remove(currentHandle);
   }
@@ -136,6 +144,10 @@ function loadPlant(): void {
   updateTelemetry(currentPlant);
   setTime(currentTime);
   renderGeneSliders();
+
+  if (refocus) {
+    frameCamera();
+  }
 }
 
 function setTime(time: number): void {
@@ -200,28 +212,28 @@ window.addEventListener('keydown', (e) => {
 inputSeed.addEventListener('change', () => {
   currentSeed = parseInt(inputSeed.value, 10) || 42;
   currentOverrides = {};
-  loadPlant();
+  loadPlant(true);
 });
 
 btnSeedDec.addEventListener('click', () => {
   currentSeed = Math.max(1, currentSeed - 1);
   inputSeed.value = currentSeed.toString();
   currentOverrides = {};
-  loadPlant();
+  loadPlant(true);
 });
 
 btnSeedInc.addEventListener('click', () => {
   currentSeed += 1;
   inputSeed.value = currentSeed.toString();
   currentOverrides = {};
-  loadPlant();
+  loadPlant(true);
 });
 
 btnRandomizeSeed.addEventListener('click', () => {
   currentSeed = Math.floor(Math.random() * 99999) + 1;
   inputSeed.value = currentSeed.toString();
   currentOverrides = {};
-  loadPlant();
+  loadPlant(true);
 });
 
 btnMutate.addEventListener('click', () => {
@@ -248,7 +260,7 @@ function selectSpecies(spId: string): void {
     }
   });
 
-  loadPlant();
+  loadPlant(true);
   if (contactSheetOverlay.classList.contains('active')) {
     renderContactSheet();
   }
@@ -286,6 +298,7 @@ function renderGeneSliders(): void {
     'petal.width',
     'petal.cupDepth',
     'petal.curlTip',
+    'flower.whorlTilt',
     'stem.height',
     'flower.headScale',
   ] as const;
@@ -454,7 +467,7 @@ window.addEventListener('resize', () => {
 });
 
 // Initial load
-loadPlant();
+loadPlant(true);
 updatePlayButtonIcon();
 
 // Render Loop
