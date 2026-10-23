@@ -9,4 +9,8 @@ export * from './generators/straightStem.js';
 export * from './organs/evalShape.js';
 export * from './organs/placement.js';
 export * from './assemble.js';
+export * from './plantAssembler.js';
+export * from './genome/schema.js';
+export * from './genome/correlations.js';
+export * from './genome/operations.js';
 export const CORE_VERSION = '0.0.1';
