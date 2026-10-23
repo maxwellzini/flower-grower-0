@@ -12,7 +12,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 
 | # | Phase | Status | Review | Started | Finished | Commit(s) | Notes |
 |---|-------|--------|--------|---------|----------|-----------|-------|
-| 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | | |
+| 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | ec97aa3 | |
 | 2 | Core math | Not started | No | | | | |
 | 3 | Single flower, minimal render | Not started | No | | | | |
 | 4 | Genome and species v1 | Not started | Yes (contact sheet) | | | | |
