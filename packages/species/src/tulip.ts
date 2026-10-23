@@ -6,12 +6,12 @@ export const TULIP_PETAL_SHAPE: OrganShape = {
   tip: 'point',
   tipSharpness: 0.25,
   baseNarrow: 0.25,
-  cupDepth: 0.38, // Deep goblet cup
-  curlTip: 0.05,
+  cupDepth: 0.42, // Deep goblet cup wrapping around center
+  curlTip: 0.0,
   reflex: 0.0,
   ruffle: 0.0,
   ruffleFreq: 1.0,
-  midribBend: 0.04,
+  midribBend: 0.38, // Inward curving goblet profile
   veinCount: 5,
   veinDepth: 0.02,
 };
@@ -29,11 +29,12 @@ export const tulip: Species = {
     'petal.count': { lo: 6, hi: 6 }, // 6 tepals
     'petal.length': { lo: 0.9, hi: 1.35 },
     'petal.width': { lo: 0.45, hi: 0.65 },
-    'petal.cupDepth': { lo: 0.3, hi: 0.42 },
-    'petal.curlTip': { lo: 0.0, hi: 0.08 },
-    'petal.reflex': { lo: 0.0, hi: 0.04 },
+    'petal.cupDepth': { lo: 0.35, hi: 0.45 },
+    'petal.curlTip': { lo: 0.0, hi: 0.0 },
+    'petal.reflex': { lo: 0.0, hi: 0.0 },
+    'petal.midribBend': { lo: 0.32, hi: 0.44 },
     'flower.whorlLayers': { lo: 2, hi: 2 }, // 3 inner + 3 outer
-    'flower.whorlTilt': { lo: 0.45, hi: 0.7 },
+    'flower.whorlTilt': { lo: 1.15, hi: 1.28 },
     'flower.whorlRadius': { lo: 0.05, hi: 0.09 },
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets
     'color.petal': {

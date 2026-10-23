@@ -172,6 +172,15 @@ export const GENES = {
     default: 0.05,
     description: 'Backward bending angle of mature petals',
   },
+  'petal.midribBend': {
+    name: 'petal.midribBend',
+    group: 'petal',
+    kind: 'float',
+    min: -0.2,
+    max: 0.5,
+    default: 0.04,
+    description: 'Longitudinal curvature along petal midrib from base to tip',
+  },
   'petal.ruffle': {
     name: 'petal.ruffle',
     group: 'petal',

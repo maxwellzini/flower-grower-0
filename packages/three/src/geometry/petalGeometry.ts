@@ -69,6 +69,9 @@ export function buildInstancedPetalGeometry(
   const scales = new Float32Array(count);
   const cupDepths = new Float32Array(count);
   const curlTips = new Float32Array(count);
+  const tilts = new Float32Array(count);
+  const midribBends = new Float32Array(count);
+  const reflexes = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
     const organ = organs[i]!;
@@ -102,6 +105,9 @@ export function buildInstancedPetalGeometry(
     scales[i] = organ.scale;
     cupDepths[i] = shape.cupDepth;
     curlTips[i] = shape.curlTip;
+    tilts[i] = organ.rotation;
+    midribBends[i] = shape.midribBend;
+    reflexes[i] = shape.reflex;
   }
 
   instanced.setAttribute('iOrigin', new THREE.InstancedBufferAttribute(origins, 3));
@@ -116,6 +122,9 @@ export function buildInstancedPetalGeometry(
   instanced.setAttribute('iScale', new THREE.InstancedBufferAttribute(scales, 1));
   instanced.setAttribute('iCupDepth', new THREE.InstancedBufferAttribute(cupDepths, 1));
   instanced.setAttribute('iCurlTip', new THREE.InstancedBufferAttribute(curlTips, 1));
+  instanced.setAttribute('iTilt', new THREE.InstancedBufferAttribute(tilts, 1));
+  instanced.setAttribute('iMidribBend', new THREE.InstancedBufferAttribute(midribBends, 1));
+  instanced.setAttribute('iReflex', new THREE.InstancedBufferAttribute(reflexes, 1));
 
   return instanced;
 }

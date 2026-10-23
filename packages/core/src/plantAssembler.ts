@@ -14,7 +14,7 @@ import type { Genome } from './genome/schema.js';
 import { sample, type Species } from './genome/operations.js';
 import { straightStem } from './generators/straightStem.js';
 import { phyllotaxis, whorls } from './organs/placement.js';
-import { crossVec3, normalizeVec3 } from './math.js';
+import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
 
 export interface GrowPlantOptions {
   species: Species;
@@ -72,25 +72,31 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const stemFinishTime = tipNode.birth;
 
   // Shapes registry
-  const shapes: OrganShape[] = [...options.species.petalShapes];
-  if (shapes.length === 0) {
-    // Default shape if none provided
-    shapes.push({
-      length: 1,
-      widthProfile: [0.2, 0.5, 0.8, 1.0, 0.9, 0.6, 0.2, 0.0],
-      tip: (genome['petal.tip'] as OrganTip | undefined) ?? 'round',
-      tipSharpness: Number(genome['petal.tipSharpness'] ?? 0.3),
-      baseNarrow: Number(genome['petal.baseNarrow'] ?? 0.2),
-      cupDepth: Number(genome['petal.cupDepth'] ?? 0.08),
-      curlTip: Number(genome['petal.curlTip'] ?? 0.15),
-      reflex: Number(genome['petal.reflex'] ?? 0.05),
-      ruffle: Number(genome['petal.ruffle'] ?? 0.02),
-      ruffleFreq: 2.0,
-      midribBend: 0.05,
-      veinCount: 3,
-      veinDepth: 0.01,
-    });
-  }
+  const baseShape: OrganShape = options.species.petalShapes[0] ?? {
+    length: 1,
+    widthProfile: [0.2, 0.5, 0.8, 1.0, 0.9, 0.6, 0.2, 0.0],
+    tip: (genome['petal.tip'] as OrganTip | undefined) ?? 'round',
+    tipSharpness: Number(genome['petal.tipSharpness'] ?? 0.3),
+    baseNarrow: Number(genome['petal.baseNarrow'] ?? 0.2),
+    cupDepth: Number(genome['petal.cupDepth'] ?? 0.08),
+    curlTip: Number(genome['petal.curlTip'] ?? 0.15),
+    reflex: Number(genome['petal.reflex'] ?? 0.05),
+    ruffle: Number(genome['petal.ruffle'] ?? 0.02),
+    ruffleFreq: 2.0,
+    midribBend: Number(genome['petal.midribBend'] ?? 0.05),
+    veinCount: 3,
+    veinDepth: 0.01,
+  };
+
+  const shapes: OrganShape[] = [
+    {
+      ...baseShape,
+      cupDepth: Number(genome['petal.cupDepth'] ?? baseShape.cupDepth),
+      curlTip: Number(genome['petal.curlTip'] ?? baseShape.curlTip),
+      reflex: Number(genome['petal.reflex'] ?? baseShape.reflex),
+      midribBend: Number(genome['petal.midribBend'] ?? baseShape.midribBend),
+    },
+  ];
 
   const organs: Organ[] = [];
   let organId = 0;
@@ -130,15 +136,23 @@ export function growPlant(options: GrowPlantOptions): Plant {
       stemTipPos[2] + p.offset[2] * headScale,
     ];
 
-    const tangent = normalizeVec3([
-      Math.cos(angle) * Math.cos(tilt),
-      Math.sin(tilt),
-      Math.sin(angle) * Math.cos(tilt),
-    ]);
+    const cosAngle = Math.cos(angle);
+    const sinAngle = Math.sin(angle);
+    const cosTilt = Math.cos(tilt);
+    const sinTilt = Math.sin(tilt);
 
-    const initialUp: Vec3 = [0, 1, 0];
-    const binormal = normalizeVec3(crossVec3(initialUp, tangent));
-    const normal = normalizeVec3(crossVec3(tangent, binormal));
+    // Orthonormal basis: length (tangent), surface normal (normal), circumferential width (binormal)
+    const tangent: Vec3 = [
+      cleanZero(cosAngle * cosTilt),
+      cleanZero(sinTilt),
+      cleanZero(sinAngle * cosTilt),
+    ];
+    const normal: Vec3 = [
+      cleanZero(-cosAngle * sinTilt),
+      cleanZero(cosTilt),
+      cleanZero(-sinAngle * sinTilt),
+    ];
+    const binormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
 
     const stagger = petalRng.range(0.0, staggerAmount);
     const birth = stemFinishTime + stagger + p.layer * 0.08;
@@ -154,7 +168,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
       binormal,
       shape: 0,
       scale: petalLength * headScale * p.scale,
-      rotation: 0,
+      rotation: tilt,
       color: {
         light: petalColor.light,
         chroma: petalColor.chroma,

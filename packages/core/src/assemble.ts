@@ -10,7 +10,7 @@ import type {
 import { createRNG } from './rng.js';
 import { straightStem } from './generators/straightStem.js';
 import { phyllotaxis, whorls } from './organs/placement.js';
-import { crossVec3, normalizeVec3 } from './math.js';
+import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
 
 export const DAISY_PETAL_SHAPE: OrganShape = {
   length: 1,
@@ -106,17 +106,23 @@ export function growDaisy(options: GrowDaisyOptions = {}): Plant {
       stemTipPos[2] + p.offset[2],
     ];
 
-    // Radial direction with slight upward tilt
-    const tangent = normalizeVec3([
-      Math.cos(angle) * Math.cos(tilt),
-      Math.sin(tilt),
-      Math.sin(angle) * Math.cos(tilt),
-    ]);
+    const cosAngle = Math.cos(angle);
+    const sinAngle = Math.sin(angle);
+    const cosTilt = Math.cos(tilt);
+    const sinTilt = Math.sin(tilt);
 
-    // Upward surface normal
-    const initialUp: Vec3 = [0, 1, 0];
-    const binormal = normalizeVec3(crossVec3(initialUp, tangent));
-    const normal = normalizeVec3(crossVec3(tangent, binormal));
+    // Orthonormal basis: length (tangent), surface normal (normal), circumferential width (binormal)
+    const tangent: Vec3 = [
+      cleanZero(cosAngle * cosTilt),
+      cleanZero(sinTilt),
+      cleanZero(sinAngle * cosTilt),
+    ];
+    const normal: Vec3 = [
+      cleanZero(-cosAngle * sinTilt),
+      cleanZero(cosTilt),
+      cleanZero(-sinAngle * sinTilt),
+    ];
+    const binormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
 
     // Stagger petal unfurl timings
     const stagger = petalRng.range(0.0, 0.15);
@@ -135,7 +141,7 @@ export function growDaisy(options: GrowDaisyOptions = {}): Plant {
       binormal,
       shape: 0, // DAISY_PETAL_SHAPE
       scale: 0.7 * p.scale,
-      rotation: 0,
+      rotation: tilt,
       color: {
         light: 0.96,
         chroma: 0.03,

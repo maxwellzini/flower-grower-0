@@ -316,21 +316,56 @@ function renderGeneSliders(): void {
   }
 }
 
+// 3D Thumbnail Generator for Contact Sheet
+const thumbCanvas = document.createElement('canvas');
+thumbCanvas.width = 240;
+thumbCanvas.height = 180;
+const thumbRenderer = new THREE.WebGLRenderer({
+  canvas: thumbCanvas,
+  antialias: true,
+  alpha: true,
+  preserveDrawingBuffer: true,
+});
+thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+thumbRenderer.toneMappingExposure = 1.15;
+
+const thumbCamera = new THREE.PerspectiveCamera(38, 240 / 180, 0.1, 50);
+thumbCamera.position.set(0, 2.2, 4.0);
+thumbCamera.lookAt(0, 1.3, 0);
+
+const thumbGarden = new Garden({ renderer: thumbRenderer });
+const thumbDirLight = new THREE.DirectionalLight(0xfff7ea, 1.3);
+thumbDirLight.position.set(2, 6, 3);
+thumbGarden.scene.add(thumbDirLight);
+const thumbAmbLight = new THREE.AmbientLight(0xd8e8f8, 0.7);
+thumbGarden.scene.add(thumbAmbLight);
+
+function createSeedThumbnail(plant: Plant): string {
+  const h = thumbGarden.add(plant);
+  h.setTime(plant.duration);
+  thumbRenderer.render(thumbGarden.scene, thumbCamera);
+  const dataUrl = thumbCanvas.toDataURL('image/jpeg', 0.82);
+  thumbGarden.remove(h);
+  return dataUrl;
+}
+
 // Contact Sheet (24 Seeds)
 const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
 
 function renderContactSheet(): void {
-  contactSheetHeading.textContent = `Contact Sheet: ${activeSpecies.name} (24 Seeds)`;
+  contactSheetHeading.textContent = `Breeder's Contact Sheet: ${activeSpecies.name} (24 Seeds)`;
   contactSheetGrid.innerHTML = '';
 
   for (let s = 1; s <= 24; s++) {
     const p = growPlant({ species: activeSpecies, seed: s });
     const petalCount = p.organs.filter((o) => o.type === 'petal').length;
     const isFib = FIBONACCI.includes(petalCount);
+    const thumbUrl = createSeedThumbnail(p);
 
     const card = document.createElement('div');
     card.className = 'seed-card';
     card.innerHTML = `
+      <img class="seed-thumbnail" src="${thumbUrl}" alt="${activeSpecies.name} Seed #${s}" />
       <div class="seed-card-header">
         <span class="seed-badge">Seed #${s}</span>
         ${isFib ? '<span class="fibonacci-tag">Fibonacci 🌀</span>' : ''}
