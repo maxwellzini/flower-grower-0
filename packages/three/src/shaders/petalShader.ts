@@ -67,32 +67,36 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         z -= 0.35 * (v * v) * (w * w) * (0.4 + iCupDepth);
 
         // 2. Longitudinal curvature from base (bottom) to tip (top), varying by plant type
-        // Belly bow (midrib arc)
-        float midribArc = sin(u * 3.14159265);
-        y += iMidribBend * midribArc * 0.35;
+        if (iMidribBend > 0.1) {
+          // Tulip goblet cup:
+          // Mid-section belly bows OUTWARD (negative Y in local frame where normal points inward):
+          float belly = sin(u * 3.14159265);
+          y -= iMidribBend * belly * 0.40;
 
-        // Plant type curvature characteristics:
-        // A. Inward-curving goblet cup (Tulip: iMidribBend > 0.1, tip curves inward toward floral center)
-        if (iMidribBend > 0.1 && u > 0.45) {
-          float inT = (u - 0.45) / 0.55;
-          y += iMidribBend * 0.5 * inT * inT;
-          z -= iMidribBend * 0.18 * inT;
-        }
+          // Upper rim curves gently INWARD (positive Y) to clasp the top of the goblet:
+          if (u > 0.55) {
+            float inT = (u - 0.55) / 0.45;
+            y += iMidribBend * 0.35 * inT * inT;
+            z -= iMidribBend * 0.12 * inT;
+          }
+        } else {
+          // Daisy & Rose:
+          float midribArc = sin(u * 3.14159265);
+          y += iMidribBend * midribArc * 0.2;
 
-        // B. Outward reflexed lip (Rose: iReflex > 0.05, outer petals curl back and downward)
-        if (iReflex > 0.05 && u > 0.55) {
-          float refT = (u - 0.55) / 0.45;
-          float reflexAngle = iReflex * refT * refT * 2.2;
-          y -= sin(reflexAngle) * 0.35 * refT;
-          z -= (1.0 - cos(reflexAngle)) * 0.25 * refT;
-        }
-
-        // C. Subtle tip droop (Daisy: iCurlTip > 0.01)
-        if (iCurlTip > 0.01 && iReflex <= 0.05 && u > 0.65) {
-          float curlT = (u - 0.65) / 0.35;
-          float curlAngle = iCurlTip * curlT * curlT * 1.5;
-          y -= sin(curlAngle) * 0.2 * curlT;
-          z -= (1.0 - cos(curlAngle)) * 0.15 * curlT;
+          // Outward reflexed lip (Rose):
+          if (iReflex > 0.03 && u > 0.5) {
+            float refT = (u - 0.5) / 0.5;
+            float reflexAngle = iReflex * refT * refT * 2.4;
+            y -= sin(reflexAngle) * 0.38 * refT;
+            z -= (1.0 - cos(reflexAngle)) * 0.25 * refT;
+          } else if (iCurlTip > 0.01 && u > 0.65) {
+            // Gentle daisy tip droop:
+            float curlT = (u - 0.65) / 0.35;
+            float curlAngle = iCurlTip * curlT * curlT * 1.5;
+            y -= sin(curlAngle) * 0.18 * curlT;
+            z -= (1.0 - cos(curlAngle)) * 0.12 * curlT;
+          }
         }
 
         // 3. Central bud formation & downward unfurling
@@ -120,10 +124,13 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         // Normal computation taking into account lateral cup, longitudinal slope, and bud rotation
         float slopeX = -v * iCupDepth * 2.0;
         float slopeZ = 0.0;
-        if (iMidribBend > 0.1 && u > 0.45) {
-          slopeZ += iMidribBend * 0.8 * ((u - 0.45) / 0.55);
-        } else if (iReflex > 0.05 && u > 0.55) {
-          slopeZ -= iReflex * 1.4 * ((u - 0.55) / 0.45);
+        if (iMidribBend > 0.1) {
+          slopeZ -= iMidribBend * cos(u * 3.14159265) * 0.40;
+          if (u > 0.55) {
+            slopeZ += iMidribBend * 0.7 * ((u - 0.55) / 0.45);
+          }
+        } else if (iReflex > 0.03 && u > 0.5) {
+          slopeZ -= iReflex * 1.5 * ((u - 0.5) / 0.5);
         }
         vec3 localNorm = normalize(vec3(slopeX, 1.0, -slopeZ));
 

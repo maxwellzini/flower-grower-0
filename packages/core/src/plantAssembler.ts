@@ -156,6 +156,8 @@ export function growPlant(options: GrowPlantOptions): Plant {
 
     const stagger = petalRng.range(0.0, staggerAmount);
     const birth = stemFinishTime + stagger + p.layer * 0.08;
+    const layerFrac = layers > 1 ? p.layer / (layers - 1) : 0;
+    const reflexFactor = Math.max(0.0, 1.0 - layerFrac * 1.35);
 
     organs.push({
       id: organId++,
@@ -178,7 +180,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
       growDuration: petalGrowDur,
       openDuration: petalOpenDur,
       openness0: 1.0,
-      age: 0,
+      age: reflexFactor,
     });
   }
 

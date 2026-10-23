@@ -169,11 +169,30 @@ scrubber.addEventListener('input', () => {
   setTime(parseFloat(scrubber.value));
 });
 
-btnPlay.addEventListener('click', () => {
+function togglePlay(): void {
   isPlaying = !isPlaying;
   updatePlayButtonIcon();
   if (isPlaying && currentPlant && currentTime >= currentPlant.duration) {
     setTime(0);
+  }
+}
+
+btnPlay.addEventListener('click', togglePlay);
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.key === ' ') {
+    const target = e.target as HTMLElement | null;
+    if (
+      target &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+    e.preventDefault();
+    togglePlay();
   }
 });
 

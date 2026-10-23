@@ -658,20 +658,19 @@
       <div class="panel-section-title">Seed Control</div>
       <div class="control-row">
         <span class="control-label">Seed</span>
-        <div class="stepper-group">
-          <button id="btn-seed-dec" class="stepper-btn" title="Previous Seed">−</button>
-          <input id="input-seed" class="stepper-input" type="number" value="42" />
-          <button id="btn-seed-inc" class="stepper-btn" title="Next Seed">+</button>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <div class="stepper-group">
+            <button id="btn-seed-dec" class="stepper-btn" title="Previous Seed">−</button>
+            <input id="input-seed" class="stepper-input" type="number" value="42" />
+            <button id="btn-seed-inc" class="stepper-btn" title="Next Seed">+</button>
+          </div>
+          <button id="btn-randomize-seed" class="btn" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;" title="Randomize Seed">🎲 Random</button>
         </div>
       </div>
 
-      <div class="btn-actions-grid">
-        <button id="btn-randomize-seed" class="btn">🎲 Randomize</button>
-        <button id="btn-mutate" class="btn">🧬 Mutate</button>
-      </div>
-
-      <div class="panel-section-title">
+      <div class="panel-section-title" style="display: flex; justify-content: space-between; align-items: center;">
         <span>Gene Sliders (Live)</span>
+        <button id="btn-mutate" class="btn" style="padding: 2px 8px; font-size: 11px;">🧬 Mutate</button>
       </div>
       <div
         id="gene-sliders-container"

@@ -104,7 +104,8 @@ export function buildInstancedPetalGeometry(
     shapeParams[i4 + 3] = organ.rotation; // stored tilt
 
     curveParams[i2] = shape.midribBend;
-    curveParams[i2 + 1] = shape.reflex;
+    curveParams[i2 + 1] =
+      shape.reflex * (organ.age !== undefined && organ.age >= 0 ? organ.age : 1.0);
   }
 
   instanced.setAttribute('iOrigin', new THREE.InstancedBufferAttribute(origins, 3));
