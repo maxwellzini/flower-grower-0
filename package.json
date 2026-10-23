@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@12.15.0",
   "scripts": {
+    "dev": "pnpm --filter @flower-grower/playground dev",
     "build": "pnpm -r run build",
     "test": "vitest run",
     "lint": "eslint .",
