@@ -12,7 +12,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 
 | # | Phase | Status | Review | Started | Finished | Commit(s) | Notes |
 |---|-------|--------|--------|---------|----------|-----------|-------|
-| 1 | Scaffold | Not started | No | | | | |
+| 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | | |
 | 2 | Core math | Not started | No | | | | |
 | 3 | Single flower, minimal render | Not started | No | | | | |
 | 4 | Genome and species v1 | Not started | Yes (contact sheet) | | | | |
@@ -29,9 +29,9 @@ moving on. Set the status to `Awaiting review` and ask the user.
 Tick items as they are verified. Add sub-items if a phase needs them.
 
 ### Phase 1: Scaffold
-- [ ] Monorepo, tooling and CI in place
-- [ ] ESLint boundary rules block three/DOM imports in core and species
-- [ ] `pnpm build && pnpm test` passes on the skeleton
+- [x] Monorepo, tooling and CI in place
+- [x] ESLint boundary rules block three/DOM imports in core and species
+- [x] `pnpm build && pnpm test` passes on the skeleton
 
 ### Phase 2: Core math
 - [ ] RNG determinism and fork independence tested
