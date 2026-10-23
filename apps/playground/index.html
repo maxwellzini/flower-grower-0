@@ -3,36 +3,479 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flower Grower Playground</title>
+    <title>Flower Grower — Botanical 3D Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family:
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          sans-serif;
-        background: #fbfbf9;
-        color: #222;
+      :root {
+        --bg-color: #0d1117;
+        --panel-bg: rgba(22, 27, 34, 0.78);
+        --panel-border: rgba(255, 255, 255, 0.1);
+        --accent-emerald: #10b981;
+        --accent-emerald-glow: rgba(16, 185, 129, 0.35);
+        --accent-amber: #f59e0b;
+        --text-main: #f0f6fc;
+        --text-muted: #8b949e;
+        --radius-lg: 16px;
+        --radius-md: 10px;
+        --radius-sm: 6px;
       }
-      #app {
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
         width: 100vw;
         height: 100vh;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 20%, #161f2c 0%, #0d1117 80%);
+        font-family:
+          'Outfit',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: var(--text-main);
+        user-select: none;
+      }
+
+      #canvas-container {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        outline: none;
+      }
+
+      /* Header Overlay */
+      .header-overlay {
+        position: absolute;
+        top: 20px;
+        left: 24px;
+        z-index: 10;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        background: var(--panel-bg);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-lg);
+        padding: 10px 18px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+
+      .logo-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 0 16px var(--accent-emerald-glow);
+      }
+
+      .header-text h1 {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .header-text p {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* Sidebar Control Panel */
+      .control-panel {
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        width: 290px;
+        z-index: 10;
+        background: var(--panel-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      }
+
+      .panel-section-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: -4px;
+      }
+
+      .control-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .control-label {
+        font-size: 13px;
+        color: var(--text-main);
+      }
+
+      .stepper-group {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+
+      .stepper-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s ease;
+      }
+
+      .stepper-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .stepper-input {
+        width: 50px;
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        text-align: center;
+        outline: none;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        padding: 6px 12px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-1px);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-color: #10b981;
+        color: #fff;
+        box-shadow: 0 4px 14px var(--accent-emerald-glow);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #34d399, #10b981);
+        border-color: #34d399;
+      }
+
+      .stats-box {
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-sm);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      .stats-row {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .stats-value {
+        color: var(--text-main);
+        font-weight: 500;
+      }
+
+      /* Bottom Timeline Bar */
+      .timeline-bar {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(720px, calc(100vw - 48px));
+        z-index: 10;
+        background: var(--panel-bg);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-lg);
+        padding: 14px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+      }
+
+      .timeline-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .play-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 14px var(--accent-emerald-glow);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .play-btn:hover {
+        transform: scale(1.06);
+      }
+
+      .play-btn:active {
+        transform: scale(0.96);
+      }
+
+      .scrubber-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        outline: none;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+
+      .scrubber-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #10b981;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 10px var(--accent-emerald-glow);
+        cursor: grab;
+        transition: transform 0.15s ease;
+      }
+
+      .scrubber-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+      }
+
+      .scrubber-slider::-webkit-slider-thumb:active {
+        cursor: grabbing;
+        transform: scale(1.35);
+      }
+
+      .time-display {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-main);
+        min-width: 110px;
+        text-align: right;
+      }
+
+      .timeline-sub-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .speed-pills {
+        display: flex;
+        gap: 4px;
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 20px;
+        padding: 2px;
+      }
+
+      .speed-pill {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .speed-pill.active {
+        background: rgba(255, 255, 255, 0.18);
+        color: var(--text-main);
+        font-weight: 600;
+      }
+
+      .growth-pill {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-family: 'JetBrains Mono', monospace;
       }
     </style>
   </head>
   <body>
-    <div id="app">
-      <h1>Flower Grower Playground</h1>
-      <p>Phase 1 skeleton initialized.</p>
+    <div id="canvas-container"></div>
+
+    <div class="header-overlay">
+      <div class="logo-badge">🌸</div>
+      <div class="header-text">
+        <h1>Flower Grower</h1>
+        <p>Phase 3 • Daisy GPU Growth</p>
+      </div>
     </div>
+
+    <div class="control-panel">
+      <div class="panel-section-title">Seed & Genes</div>
+      <div class="control-row">
+        <span class="control-label">Seed</span>
+        <div class="stepper-group">
+          <button id="btn-seed-dec" class="stepper-btn" title="Previous Seed">−</button>
+          <input id="input-seed" class="stepper-input" type="number" value="42" />
+          <button id="btn-seed-inc" class="stepper-btn" title="Next Seed">+</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <button id="btn-randomize-seed" class="btn" style="width: 100%">
+          🎲 Randomize Seed
+        </button>
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Petals</span>
+        <div class="stepper-group">
+          <button id="btn-petals-dec" class="stepper-btn">−</button>
+          <input id="input-petals" class="stepper-input" type="number" value="21" />
+          <button id="btn-petals-inc" class="stepper-btn">+</button>
+        </div>
+      </div>
+
+      <div class="panel-section-title">Plant Telemetry</div>
+      <div class="stats-box">
+        <div class="stats-row">
+          <span>Species:</span>
+          <span class="stats-value">Daisy</span>
+        </div>
+        <div class="stats-row">
+          <span>Duration:</span>
+          <span id="stat-duration" class="stats-value">3.40s</span>
+        </div>
+        <div class="stats-row">
+          <span>Organs:</span>
+          <span id="stat-organs" class="stats-value">76</span>
+        </div>
+        <div class="stats-row">
+          <span>Stems:</span>
+          <span id="stat-stems" class="stats-value">1 (18 nodes)</span>
+        </div>
+      </div>
+
+      <button id="btn-export-json" class="btn">💾 Export Plant JSON</button>
+    </div>
+
+    <div class="timeline-bar">
+      <div class="timeline-row">
+        <button id="btn-play" class="play-btn" title="Play/Pause">
+          <svg
+            id="icon-play"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </button>
+
+        <input
+          id="scrubber"
+          class="scrubber-slider"
+          type="range"
+          min="0"
+          max="3.4"
+          step="0.005"
+          value="0"
+        />
+
+        <div id="time-display" class="time-display">0.00s / 3.40s</div>
+      </div>
+
+      <div class="timeline-sub-row">
+        <div class="speed-pills">
+          <button class="speed-pill" data-speed="0.5">0.5×</button>
+          <button class="speed-pill active" data-speed="1.0">1.0×</button>
+          <button class="speed-pill" data-speed="2.0">2.0×</button>
+        </div>
+
+        <div id="growth-pill" class="growth-pill">0.0% GROWN</div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

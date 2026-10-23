@@ -1,23 +1,27 @@
 import type { Vec3 } from './types.js';
 
+export function cleanZero(n: number): number {
+  return n === 0 ? 0 : n;
+}
+
 export function vec3(x = 0, y = 0, z = 0): Vec3 {
-  return [x, y, z];
+  return [cleanZero(x), cleanZero(y), cleanZero(z)];
 }
 
 export function cloneVec3(v: Vec3): Vec3 {
-  return [v[0], v[1], v[2]];
+  return [cleanZero(v[0]), cleanZero(v[1]), cleanZero(v[2])];
 }
 
 export function addVec3(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  return [cleanZero(a[0] + b[0]), cleanZero(a[1] + b[1]), cleanZero(a[2] + b[2])];
 }
 
 export function subVec3(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  return [cleanZero(a[0] - b[0]), cleanZero(a[1] - b[1]), cleanZero(a[2] - b[2])];
 }
 
 export function scaleVec3(v: Vec3, s: number): Vec3 {
-  return [v[0] * s, v[1] * s, v[2] * s];
+  return [cleanZero(v[0] * s), cleanZero(v[1] * s), cleanZero(v[2] * s)];
 }
 
 export function dotVec3(a: Vec3, b: Vec3): number {
@@ -26,9 +30,9 @@ export function dotVec3(a: Vec3, b: Vec3): number {
 
 export function crossVec3(a: Vec3, b: Vec3): Vec3 {
   return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0],
+    cleanZero(a[1] * b[2] - a[2] * b[1]),
+    cleanZero(a[2] * b[0] - a[0] * b[2]),
+    cleanZero(a[0] * b[1] - a[1] * b[0]),
   ];
 }
 
@@ -55,7 +59,7 @@ export function normalizeVec3(v: Vec3): Vec3 {
   const len = Math.hypot(v[0], v[1], v[2]);
   if (len === 0) return [0, 0, 0];
   const inv = 1 / len;
-  return [v[0] * inv, v[1] * inv, v[2] * inv];
+  return [cleanZero(v[0] * inv), cleanZero(v[1] * inv), cleanZero(v[2] * inv)];
 }
 
 export function lerpVec3(a: Vec3, b: Vec3, t: number): Vec3 {
