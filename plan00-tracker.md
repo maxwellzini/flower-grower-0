@@ -13,7 +13,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | # | Phase | Status | Review | Started | Finished | Commit(s) | Notes |
 |---|-------|--------|--------|---------|----------|-----------|-------|
 | 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | ec97aa3 | |
-| 2 | Core math | Not started | No | | | | |
+| 2 | Core math | Done | No | 2026-10-23 | 2026-10-23 | | |
 | 3 | Single flower, minimal render | Not started | No | | | | |
 | 4 | Genome and species v1 | Not started | Yes (contact sheet) | | | | |
 | 5 | Botanical style | Not started | Yes (look) | | | | |
@@ -34,10 +34,10 @@ Tick items as they are verified. Add sub-items if a phase needs them.
 - [x] `pnpm build && pnpm test` passes on the skeleton
 
 ### Phase 2: Core math
-- [ ] RNG determinism and fork independence tested
-- [ ] Curve frames are orthonormal (tested)
-- [ ] Plant types JSON round-trip (tested)
-- [ ] OKLCH conversion matches known values
+- [x] RNG determinism and fork independence tested
+- [x] Curve frames are orthonormal (tested)
+- [x] Plant types JSON round-trip (tested)
+- [x] OKLCH conversion matches known values
 
 ### Phase 3: Single flower, minimal render
 - [ ] Daisy grows in the playground
