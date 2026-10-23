@@ -319,7 +319,7 @@ function renderGeneSliders(): void {
 // 3D Thumbnail Generator for Contact Sheet
 const thumbCanvas = document.createElement('canvas');
 thumbCanvas.width = 240;
-thumbCanvas.height = 180;
+thumbCanvas.height = 200;
 const thumbRenderer = new THREE.WebGLRenderer({
   canvas: thumbCanvas,
   antialias: true,
@@ -329,22 +329,28 @@ const thumbRenderer = new THREE.WebGLRenderer({
 thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping;
 thumbRenderer.toneMappingExposure = 1.15;
 
-const thumbCamera = new THREE.PerspectiveCamera(38, 240 / 180, 0.1, 50);
-thumbCamera.position.set(0, 2.2, 4.0);
-thumbCamera.lookAt(0, 1.3, 0);
+const thumbCamera = new THREE.PerspectiveCamera(42, 240 / 200, 0.1, 50);
 
 const thumbGarden = new Garden({ renderer: thumbRenderer });
-const thumbDirLight = new THREE.DirectionalLight(0xfff7ea, 1.3);
+const thumbDirLight = new THREE.DirectionalLight(0xfff7ea, 1.35);
 thumbDirLight.position.set(2, 6, 3);
 thumbGarden.scene.add(thumbDirLight);
 const thumbAmbLight = new THREE.AmbientLight(0xd8e8f8, 0.7);
 thumbGarden.scene.add(thumbAmbLight);
 
 function createSeedThumbnail(plant: Plant): string {
+  const mainStem = plant.stems[0];
+  const tipNode = mainStem?.nodes[mainStem.nodes.length - 1];
+  const headHeight = tipNode ? tipNode.pos[1] : 2.2;
+
+  // Higher angle camera elevated above flower head, looking downward to capture full head & petals
+  thumbCamera.position.set(0, headHeight + 1.3, 2.6);
+  thumbCamera.lookAt(0, headHeight - 0.15, 0);
+
   const h = thumbGarden.add(plant);
   h.setTime(plant.duration);
   thumbRenderer.render(thumbGarden.scene, thumbCamera);
-  const dataUrl = thumbCanvas.toDataURL('image/jpeg', 0.82);
+  const dataUrl = thumbCanvas.toDataURL('image/jpeg', 0.85);
   thumbGarden.remove(h);
   return dataUrl;
 }
