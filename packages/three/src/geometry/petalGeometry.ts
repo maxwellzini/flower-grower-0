@@ -62,20 +62,15 @@ export function buildInstancedPetalGeometry(
   const normals = new Float32Array(count * 3);
   const binormals = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
-  const births = new Float32Array(count);
-  const grows = new Float32Array(count);
-  const openDurs = new Float32Array(count);
-  const open0s = new Float32Array(count);
-  const scales = new Float32Array(count);
-  const cupDepths = new Float32Array(count);
-  const curlTips = new Float32Array(count);
-  const tilts = new Float32Array(count);
-  const midribBends = new Float32Array(count);
-  const reflexes = new Float32Array(count);
+  const growthParams = new Float32Array(count * 4); // birth, grow, openDur, open0
+  const shapeParams = new Float32Array(count * 4);  // scale, cupDepth, curlTip, tilt
+  const curveParams = new Float32Array(count * 2);  // midribBend, reflex
 
   for (let i = 0; i < count; i++) {
     const organ = organs[i]!;
     const i3 = i * 3;
+    const i4 = i * 4;
+    const i2 = i * 2;
 
     origins[i3] = organ.origin[0];
     origins[i3 + 1] = organ.origin[1];
@@ -98,16 +93,18 @@ export function buildInstancedPetalGeometry(
     colors[i3 + 1] = rgb.g;
     colors[i3 + 2] = rgb.b;
 
-    births[i] = organ.birth;
-    grows[i] = organ.growDuration;
-    openDurs[i] = organ.openDuration;
-    open0s[i] = organ.openness0;
-    scales[i] = organ.scale;
-    cupDepths[i] = shape.cupDepth;
-    curlTips[i] = shape.curlTip;
-    tilts[i] = organ.rotation;
-    midribBends[i] = shape.midribBend;
-    reflexes[i] = shape.reflex;
+    growthParams[i4] = organ.birth;
+    growthParams[i4 + 1] = organ.growDuration;
+    growthParams[i4 + 2] = organ.openDuration;
+    growthParams[i4 + 3] = organ.openness0;
+
+    shapeParams[i4] = organ.scale;
+    shapeParams[i4 + 1] = shape.cupDepth;
+    shapeParams[i4 + 2] = shape.curlTip;
+    shapeParams[i4 + 3] = organ.rotation; // stored tilt
+
+    curveParams[i2] = shape.midribBend;
+    curveParams[i2 + 1] = shape.reflex;
   }
 
   instanced.setAttribute('iOrigin', new THREE.InstancedBufferAttribute(origins, 3));
@@ -115,16 +112,9 @@ export function buildInstancedPetalGeometry(
   instanced.setAttribute('iNormal', new THREE.InstancedBufferAttribute(normals, 3));
   instanced.setAttribute('iBinormal', new THREE.InstancedBufferAttribute(binormals, 3));
   instanced.setAttribute('iColor', new THREE.InstancedBufferAttribute(colors, 3));
-  instanced.setAttribute('iBirth', new THREE.InstancedBufferAttribute(births, 1));
-  instanced.setAttribute('iGrow', new THREE.InstancedBufferAttribute(grows, 1));
-  instanced.setAttribute('iOpenDur', new THREE.InstancedBufferAttribute(openDurs, 1));
-  instanced.setAttribute('iOpen0', new THREE.InstancedBufferAttribute(open0s, 1));
-  instanced.setAttribute('iScale', new THREE.InstancedBufferAttribute(scales, 1));
-  instanced.setAttribute('iCupDepth', new THREE.InstancedBufferAttribute(cupDepths, 1));
-  instanced.setAttribute('iCurlTip', new THREE.InstancedBufferAttribute(curlTips, 1));
-  instanced.setAttribute('iTilt', new THREE.InstancedBufferAttribute(tilts, 1));
-  instanced.setAttribute('iMidribBend', new THREE.InstancedBufferAttribute(midribBends, 1));
-  instanced.setAttribute('iReflex', new THREE.InstancedBufferAttribute(reflexes, 1));
+  instanced.setAttribute('iGrowthParams', new THREE.InstancedBufferAttribute(growthParams, 4));
+  instanced.setAttribute('iShapeParams', new THREE.InstancedBufferAttribute(shapeParams, 4));
+  instanced.setAttribute('iCurveParams', new THREE.InstancedBufferAttribute(curveParams, 2));
 
   return instanced;
 }

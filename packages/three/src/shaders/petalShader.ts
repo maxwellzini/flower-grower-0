@@ -14,16 +14,9 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
       attribute vec3 iNormal;
       attribute vec3 iBinormal;
       attribute vec3 iColor;
-      attribute float iBirth;
-      attribute float iGrow;
-      attribute float iOpenDur;
-      attribute float iOpen0;
-      attribute float iScale;
-      attribute float iCupDepth;
-      attribute float iCurlTip;
-      attribute float iTilt;
-      attribute float iMidribBend;
-      attribute float iReflex;
+      attribute vec4 iGrowthParams; // birth, grow, openDur, open0
+      attribute vec4 iShapeParams;  // scale, cupDepth, curlTip, tilt
+      attribute vec2 iCurveParams;  // midribBend, reflex
 
       varying vec3 vNormal;
       varying vec3 vColor;
@@ -33,6 +26,19 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
       void main() {
         vUv = uv;
         vColor = iColor;
+
+        float iBirth = iGrowthParams.x;
+        float iGrow = iGrowthParams.y;
+        float iOpenDur = iGrowthParams.z;
+        float iOpen0 = iGrowthParams.w;
+
+        float iScale = iShapeParams.x;
+        float iCupDepth = iShapeParams.y;
+        float iCurlTip = iShapeParams.z;
+        float iTilt = iShapeParams.w;
+
+        float iMidribBend = iCurveParams.x;
+        float iReflex = iCurveParams.y;
 
         // Growth scale (0 until born, smoothstep to 1)
         float growProgress = clamp((uTime - iBirth) / max(0.001, iGrow), 0.0, 1.0);

@@ -30,10 +30,9 @@ describe('Three.js Garden and Geometry Builders', () => {
     expect(geom.getAttribute('iNormal')).toBeDefined();
     expect(geom.getAttribute('iBinormal')).toBeDefined();
     expect(geom.getAttribute('iColor')).toBeDefined();
-    expect(geom.getAttribute('iBirth')).toBeDefined();
-    expect(geom.getAttribute('iGrow')).toBeDefined();
-    expect(geom.getAttribute('iOpenDur')).toBeDefined();
-    expect(geom.getAttribute('iScale')).toBeDefined();
+    expect(geom.getAttribute('iGrowthParams')).toBeDefined();
+    expect(geom.getAttribute('iShapeParams')).toBeDefined();
+    expect(geom.getAttribute('iCurveParams')).toBeDefined();
   });
 
   it('adds and scrubs plant in Garden scene', () => {
