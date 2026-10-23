@@ -14,7 +14,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 |---|-------|--------|--------|---------|----------|-----------|-------|
 | 1 | Scaffold | Done | No | 2026-10-23 | 2026-10-23 | ec97aa3 | |
 | 2 | Core math | Done | No | 2026-10-23 | 2026-10-23 | 920370e | |
-| 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | | |
+| 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
 | 4 | Genome and species v1 | Not started | Yes (contact sheet) | | | | |
 | 5 | Botanical style | Not started | Yes (look) | | | | |
 | 6 | Vines and the trellis | Not started | No | | | | |
