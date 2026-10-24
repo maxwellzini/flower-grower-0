@@ -271,7 +271,7 @@ function selectSpecies(spId: string): void {
     }
   });
 
-  loadPlant(true);
+  loadPlant(false, true);
   if (contactSheetOverlay.classList.contains('active')) {
     renderContactSheet();
   }

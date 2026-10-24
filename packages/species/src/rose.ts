@@ -34,24 +34,24 @@ export const rose: Species = {
     'petal.width': { lo: 0.76, hi: 0.94 }, // authentic broad fan/obcordate proportions
     'petal.cupDepth': { lo: 0.28, hi: 0.38 }, // deep spoon-shaped cradle
     'petal.curlTip': { lo: 0.15, hi: 0.25 },
-    'petal.reflex': { lo: 0.30, hi: 0.44 }, // sculpted revolute margins
+    'petal.reflex': { lo: 0.38, hi: 0.54 }, // sculpted revolute margins
     'petal.midribBend': { lo: 0.0, hi: 0.03 },
     'flower.whorlLayers': { lo: 5, hi: 6 },
-    'flower.whorlTilt': { lo: 0.30, hi: 0.44 },
+    'flower.whorlTilt': { lo: 0.28, hi: 0.40 },
     'flower.whorlRadius': { lo: 0.09, hi: 0.13 },
-    'flower.headScale': { lo: 0.9, hi: 1.15 },
+    'flower.headScale': { lo: 0.95, hi: 1.15 },
     'flower.sepalCount': { lo: 5, hi: 5 },
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets in rose
     'leaf.count': { lo: 4, hi: 7 },
-    'leaf.length': { lo: 0.45, hi: 0.7 },
+    'leaf.length': { lo: 0.45, hi: 0.65 },
     'leaf.width': { lo: 0.26, hi: 0.38 },
     'leaf.tilt': { lo: 0.55, hi: 0.8 },
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.4, hi: 1.9 },
     'color.petal': {
-      light: [0.3, 0.56],
-      chroma: [0.22, 0.34],
-      hue: [350, 28], // From deep velvet ruby to fiery warm rose
+      light: [0.26, 0.48],
+      chroma: [0.26, 0.38],
+      hue: [346, 18], // Deep velvety crimson to fiery scarlet
     },
     'color.leaf': {
       light: [0.28, 0.42],

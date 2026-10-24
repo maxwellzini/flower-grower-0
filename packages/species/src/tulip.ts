@@ -24,39 +24,39 @@ export const tulip: Species = {
   description:
     'Tulipa gesneriana with an erect cupped goblet formed of 6 broad overlapping tepals in two whorls and glaucous basal strap leaves.',
   ranges: {
-    'stem.height': { lo: 1.8, hi: 2.6 },
-    'stem.baseRadius': { lo: 0.04, hi: 0.052 },
-    'stem.tipRadius': { lo: 0.024, hi: 0.032 },
-    'stem.noiseAmp': { lo: 0.04, hi: 0.12 },
+    'stem.height': { lo: 1.3, hi: 1.8 },
+    'stem.baseRadius': { lo: 0.038, hi: 0.048 },
+    'stem.tipRadius': { lo: 0.022, hi: 0.028 },
+    'stem.noiseAmp': { lo: 0.06, hi: 0.14 },
     'stem.growSpeed': { lo: 4.5, hi: 6.5 },
     'petal.count': { lo: 6, hi: 6 }, // 6 tepals
-    'petal.length': { lo: 0.95, hi: 1.25 },
-    'petal.width': { lo: 0.62, hi: 0.74 }, // broad tepals seamlessly cupping goblet
-    'petal.cupDepth': { lo: 0.32, hi: 0.42 },
+    'petal.length': { lo: 1.05, hi: 1.35 },
+    'petal.width': { lo: 0.7, hi: 0.84 }, // broad tepals seamlessly cupping goblet
+    'petal.cupDepth': { lo: 0.38, hi: 0.48 },
     'petal.curlTip': { lo: 0.0, hi: 0.0 },
     'petal.reflex': { lo: 0.0, hi: 0.0 },
-    'petal.midribBend': { lo: 0.34, hi: 0.44 },
+    'petal.midribBend': { lo: 0.38, hi: 0.48 },
     'flower.whorlLayers': { lo: 2, hi: 2 }, // 3 inner + 3 outer
     'flower.whorlTilt': { lo: 1.28, hi: 1.36 }, // erect goblet
-    'flower.whorlRadius': { lo: 0.042, hi: 0.058 }, // snug attachment directly at stem neck
-    'flower.headScale': { lo: 0.92, hi: 1.12 },
+    'flower.whorlRadius': { lo: 0.042, hi: 0.055 }, // snug attachment directly at stem neck
+    'flower.headScale': { lo: 1.0, hi: 1.2 },
     'flower.sepalCount': { lo: 0, hi: 0 }, // no calyx on tulip
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets
     'leaf.count': { lo: 2, hi: 3 },
-    'leaf.length': { lo: 0.85, hi: 1.2 },
-    'leaf.width': { lo: 0.28, hi: 0.4 },
-    'leaf.tilt': { lo: 0.5, hi: 0.72 },
+    'leaf.length': { lo: 1.1, hi: 1.5 },
+    'leaf.width': { lo: 0.42, hi: 0.58 },
+    'leaf.tilt': { lo: 0.45, hi: 0.65 },
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.3, hi: 1.8 },
     'color.petal': {
       light: [0.45, 0.78],
-      chroma: [0.22, 0.35],
-      hue: [18, 62], // Rich amber golden orange to fiery scarlet
+      chroma: [0.24, 0.38],
+      hue: [15, 55], // Rich fiery scarlet to warm amber-orange
     },
     'color.leaf': {
       light: [0.38, 0.52],
-      chroma: [0.06, 0.14],
-      hue: [135, 155], // Glaucous blue-green
+      chroma: [0.06, 0.12],
+      hue: [140, 160], // Glaucous blue-green
     },
   },
   petalShapes: [TULIP_PETAL_SHAPE],
