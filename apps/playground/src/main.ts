@@ -312,6 +312,8 @@ function renderGeneSliders(): void {
     'flower.whorlTilt',
     'stem.height',
     'flower.headScale',
+    'leaf.count',
+    'leaf.length',
   ] as const;
 
   for (const geneKey of keyGenes) {
@@ -428,6 +430,7 @@ function renderContactSheet(): void {
   for (let s = 1; s <= 24; s++) {
     const p = growPlant({ species: activeSpecies, seed: s });
     const petalCount = p.organs.filter((o) => o.type === 'petal').length;
+    const leafCount = p.organs.filter((o) => o.type === 'leaf').length;
     const isFib = FIBONACCI.includes(petalCount);
     const thumbUrl = createSeedThumbnail(p);
 
@@ -440,7 +443,7 @@ function renderContactSheet(): void {
         ${isFib ? '<span class="fibonacci-tag">Fibonacci 🌀</span>' : ''}
       </div>
       <div class="seed-details">
-        <div>Petals: <strong>${petalCount}</strong></div>
+        <div>Petals: <strong>${petalCount}</strong> • Leaves: <strong>${leafCount}</strong></div>
         <div>Stem: <strong>${p.stems[0]?.nodes.length || 0} nodes</strong></div>
         <div>Grow Time: <strong>${p.duration.toFixed(2)}s</strong></div>
       </div>

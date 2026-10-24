@@ -319,6 +319,14 @@ export const GENES = {
     default: 0.6,
     description: 'Downward drooping tilt angle of leaves',
   },
+  'leaf.arrangement': {
+    name: 'leaf.arrangement',
+    group: 'leaf',
+    kind: 'choice',
+    options: ['alternate', 'opposite', 'spiral', 'basal'] as const,
+    default: 'alternate',
+    description: 'Phyllotaxis distribution of cauline foliage along the stem',
+  },
 
   // Color genes (OKLCH)
   'color.petal': {
@@ -350,6 +358,16 @@ export const GENES = {
     hue: [110, 155],
     default: { light: 0.42, chroma: 0.12, hue: 135 },
     description: 'Stem and foliar vegetative OKLCH color',
+  },
+  'color.leaf': {
+    name: 'color.leaf',
+    group: 'color',
+    kind: 'color',
+    light: [0.22, 0.65],
+    chroma: [0.04, 0.22],
+    hue: [110, 160],
+    default: { light: 0.38, chroma: 0.14, hue: 135 },
+    description: 'Foliage blade OKLCH color palette',
   },
 
   // Growth & Timing genes

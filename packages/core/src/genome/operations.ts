@@ -24,6 +24,7 @@ export interface Species {
   ranges: Partial<Record<GeneName, NumericGeneRange | ChoiceGeneRange | ColorGeneRange>>;
   correlations?: Correlation[];
   petalShapes: OrganShape[];
+  leafShapes?: OrganShape[];
   description?: string;
 }
 

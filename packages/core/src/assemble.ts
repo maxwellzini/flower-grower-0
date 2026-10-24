@@ -14,18 +14,98 @@ import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
 
 export const DAISY_PETAL_SHAPE: OrganShape = {
   length: 1,
-  widthProfile: [0.15, 0.38, 0.68, 0.88, 1.0, 0.96, 0.82, 0.58, 0.25, 0.0],
-  tip: 'round',
+  widthProfile: [0.12, 0.22, 0.42, 0.65, 0.82, 0.95, 1.0, 0.98, 0.88, 0.45, 0.0],
+  tip: 'notch',
   tipSharpness: 0.25,
-  baseNarrow: 0.22,
-  cupDepth: 0.06,
-  curlTip: 0.12,
-  reflex: 0.05,
-  ruffle: 0.02,
-  ruffleFreq: 2.0,
-  midribBend: 0.04,
+  baseNarrow: 0.35,
+  cupDepth: 0.12,
+  curlTip: 0.16,
+  reflex: 0.06,
+  ruffle: 0.025,
+  ruffleFreq: 2.5,
+  midribBend: 0.08,
   veinCount: 3,
+  veinDepth: 0.015,
+};
+
+export const DAISY_LEAF_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.08, 0.16, 0.28, 0.48, 0.72, 0.92, 1.0, 0.94, 0.72, 0.35, 0.0],
+  tip: 'round',
+  tipSharpness: 0.2,
+  baseNarrow: 0.65,
+  cupDepth: 0.14,
+  curlTip: 0.18,
+  reflex: 0.08,
+  ruffle: 0.04,
+  ruffleFreq: 4.0,
+  midribBend: 0.28,
+  veinCount: 5,
+  veinDepth: 0.015,
+};
+
+export const ROSE_LEAF_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.12, 0.35, 0.65, 0.88, 0.98, 1.0, 0.92, 0.78, 0.52, 0.22, 0.0],
+  tip: 'point',
+  tipSharpness: 0.55,
+  baseNarrow: 0.45,
+  cupDepth: 0.15,
+  curlTip: 0.22,
+  reflex: 0.12,
+  ruffle: 0.035,
+  ruffleFreq: 6.0,
+  midribBend: 0.32,
+  veinCount: 7,
+  veinDepth: 0.02,
+};
+
+export const TULIP_LEAF_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.25, 0.55, 0.82, 0.95, 1.0, 0.96, 0.88, 0.74, 0.52, 0.25, 0.0],
+  tip: 'point',
+  tipSharpness: 0.4,
+  baseNarrow: 0.25,
+  cupDepth: 0.38,
+  curlTip: 0.05,
+  reflex: 0.0,
+  ruffle: 0.0,
+  ruffleFreq: 1.0,
+  midribBend: 0.45,
+  veinCount: 9,
+  veinDepth: 0.025,
+};
+
+export const CALYX_BRACT_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.25, 0.65, 0.92, 1.0, 0.88, 0.62, 0.3, 0.0],
+  tip: 'point',
+  tipSharpness: 0.6,
+  baseNarrow: 0.2,
+  cupDepth: 0.22,
+  curlTip: 0.15,
+  reflex: 0.45,
+  ruffle: 0.0,
+  ruffleFreq: 0.0,
+  midribBend: 0.1,
+  veinCount: 1,
   veinDepth: 0.01,
+};
+
+export const ROSE_HIP_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.4, 0.75, 0.95, 1.0, 0.95, 0.8, 0.55, 0.0],
+  tip: 'round',
+  tipSharpness: 0.1,
+  baseNarrow: 0.3,
+  cupDepth: 0.4,
+  curlTip: 0.0,
+  reflex: 0.0,
+  ruffle: 0.0,
+  ruffleFreq: 0.0,
+  midribBend: 0.0,
+  veinCount: 0,
+  veinDepth: 0.0,
 };
 
 export const DAISY_CENTER_SHAPE: OrganShape = {

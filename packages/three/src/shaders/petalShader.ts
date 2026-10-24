@@ -64,14 +64,19 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         // 1. Curving around the center of the flower (transverse / lateral curvature)
         // iNormal points inward towards the stem axis.
         // Negative Y moves outward away from the stem axis (creating a concave inner cup cradling the flower center).
-        y -= iCupDepth * (1.0 - v * v) * sin(u * 3.14159265);
+        float cupFactor = sin(u * 3.14159265);
+        y -= iCupDepth * (1.0 - v * v) * cupFactor;
 
         // B. Azimuthal curve around floral cylinder (bending margins inward towards center)
         z -= 0.32 * (v * v) * (w * w) * (0.3 + iCupDepth);
 
+        // C. Central midrib longitudinal trough/gutter (crisp crease definition for petals & leaves):
+        float midribFurrow = -abs(v) * (1.0 - abs(v)) * 0.16 * max(0.12, iCupDepth) * cupFactor;
+        y += midribFurrow;
+
         // 2. Longitudinal curvature from base (bottom) to tip (top), varying by plant type
         if (iMidribBend > 0.1) {
-          // Tulip goblet cup:
+          // Tulip goblet cup & arched leaf:
           // Mid-section belly bows OUTWARD (negative Y in local frame where normal points inward):
           float belly = sin(u * 3.14159265);
           y -= iMidribBend * belly * 0.42;
@@ -94,9 +99,14 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
             y -= sin(reflexAngle) * 0.42 * refT;
             z -= (1.0 - cos(reflexAngle)) * 0.28 * refT;
 
+            // Rose petal edge margin roll:
+            float marginRoll = smoothstep(0.55, 1.0, abs(v)) * iReflex * 0.18 * refT;
+            y -= marginRoll;
+
             // Rose petal edge cusp/crease at the reflexed margin:
             float cusp = (1.0 - smoothstep(0.0, 0.25, abs(v))) * smoothstep(0.65, 1.0, u);
-            y -= cusp * 0.06 * iReflex;
+            y -= cusp * 0.08 * iReflex;
+            z -= cusp * 0.06 * iReflex;
           } else if (iCurlTip > 0.01 && u > 0.65) {
             // Gentle daisy tip droop:
             float curlT = (u - 0.65) / 0.35;

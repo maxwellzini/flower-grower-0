@@ -155,3 +155,114 @@ export function whorls(options: WhorlOptions): WhorlPetalPlacement[] {
 
   return placements;
 }
+
+export type LeafArrangementType = 'alternate' | 'opposite' | 'spiral' | 'basal';
+
+export interface LeafArrangementOptions {
+  nodeCount: number;
+  count: number;
+  arrangement?: LeafArrangementType;
+  startFrac?: number;
+  endFrac?: number;
+  tilt?: number;
+  baseAngle?: number;
+}
+
+export interface StemLeafPlacement {
+  index: number;
+  nodeIndex: number;
+  angle: number;
+  tilt: number;
+  scale: number;
+}
+
+/**
+ * Calculates node attachments and spatial orientations for cauline leaves along a stem.
+ */
+export function leafArrangement(options: LeafArrangementOptions): StemLeafPlacement[] {
+  const {
+    nodeCount,
+    count,
+    arrangement = 'alternate',
+    startFrac = 0.15,
+    endFrac = 0.75,
+    tilt = 0.65,
+    baseAngle = 0.2,
+  } = options;
+
+  if (count <= 0 || nodeCount < 3) return [];
+
+  const placements: StemLeafPlacement[] = [];
+  const minNode = Math.max(1, Math.floor(nodeCount * startFrac));
+  const maxNode = Math.min(nodeCount - 2, Math.floor(nodeCount * endFrac));
+  const availableNodes = Math.max(1, maxNode - minNode);
+
+  if (arrangement === 'basal') {
+    const basalNodes = Math.min(count, Math.max(1, Math.floor(nodeCount * 0.35)));
+    for (let i = 0; i < count; i++) {
+      const frac = count > 1 ? i / (count - 1) : 0;
+      const nodeIndex = minNode + Math.round(frac * basalNodes);
+      const angle = baseAngle + i * 2.39996; // Golden angle ~137.5 deg
+      const scale = 1.0 - frac * 0.25;
+      const leafTilt = tilt + (1.0 - frac) * 0.18;
+
+      placements.push({
+        index: i,
+        nodeIndex: Math.min(nodeCount - 2, nodeIndex),
+        angle,
+        tilt: leafTilt,
+        scale,
+      });
+    }
+    return placements;
+  }
+
+  if (arrangement === 'opposite') {
+    const pairs = Math.ceil(count / 2);
+    let total = 0;
+    for (let p = 0; p < pairs && total < count; p++) {
+      const frac = pairs > 1 ? p / (pairs - 1) : 0.5;
+      const nodeIndex = Math.round(minNode + frac * availableNodes);
+      const pairAngle = baseAngle + p * (Math.PI * 0.5);
+      const scale = 1.0 - frac * 0.2;
+
+      placements.push({
+        index: total++,
+        nodeIndex,
+        angle: pairAngle,
+        tilt,
+        scale,
+      });
+
+      if (total < count) {
+        placements.push({
+          index: total++,
+          nodeIndex,
+          angle: pairAngle + Math.PI,
+          tilt,
+          scale,
+        });
+      }
+    }
+    return placements;
+  }
+
+  const angleStep = arrangement === 'alternate' ? Math.PI * 0.95 : 2.39996;
+  for (let i = 0; i < count; i++) {
+    const frac = count > 1 ? i / (count - 1) : 0.5;
+    const nodeIndex = Math.round(minNode + frac * availableNodes);
+    const angle = baseAngle + i * angleStep;
+    const scale = 1.0 - frac * 0.25;
+    const leafTilt = tilt + Math.sin(frac * Math.PI) * 0.15;
+
+    placements.push({
+      index: i,
+      nodeIndex,
+      angle,
+      tilt: leafTilt,
+      scale,
+    });
+  }
+
+  return placements;
+}
