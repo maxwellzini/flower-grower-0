@@ -6,6 +6,7 @@ export * from './curve.js';
 export * from './color.js';
 export * from './guides.js';
 export * from './generators/straightStem.js';
+export * from './generators/vineWalker.js';
 export * from './organs/evalShape.js';
 export * from './organs/placement.js';
 export * from './assemble.js';

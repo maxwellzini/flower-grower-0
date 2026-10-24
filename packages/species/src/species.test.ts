@@ -5,6 +5,7 @@ import { peony } from './peony.js';
 import { ranunculus } from './ranunculus.js';
 import { rose } from './rose.js';
 import { tulip } from './tulip.js';
+import { morningGlory } from './morningGlory.js';
 import { SPECIES_REGISTRY } from './index.js';
 
 describe('Species Archetypes and Plant Assembly', () => {
@@ -14,9 +15,10 @@ describe('Species Archetypes and Plant Assembly', () => {
     expect(SPECIES_REGISTRY['ranunculus']).toBe(ranunculus);
     expect(SPECIES_REGISTRY['rose']).toBe(rose);
     expect(SPECIES_REGISTRY['tulip']).toBe(tulip);
+    expect(SPECIES_REGISTRY['morning-glory']).toBe(morningGlory);
   });
 
-  const speciesList = [daisy, peony, ranunculus, rose, tulip];
+  const speciesList = [daisy, peony, ranunculus, rose, tulip, morningGlory];
 
   for (const sp of speciesList) {
     it(`grows valid deterministic plants across seeds for species "${sp.id}"`, () => {

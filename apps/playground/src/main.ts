@@ -7,8 +7,10 @@ import {
   sample,
   createRNG,
   type Genome,
+  type GrowthGuide,
   type Plant,
   type Species,
+  type Vec3,
 } from '@flower-grower/core';
 import { Garden, type PlantHandle } from '@flower-grower/three';
 import { daisy, SPECIES_REGISTRY } from '@flower-grower/species';
@@ -35,11 +37,75 @@ const statStems = document.getElementById('stat-stems')!;
 const btnExportJson = document.getElementById('btn-export-json')!;
 
 const tabLab = document.getElementById('tab-lab')!;
+const tabTrellis = document.getElementById('tab-trellis')!;
 const tabContactSheet = document.getElementById('tab-contact-sheet')!;
 const contactSheetOverlay = document.getElementById('contact-sheet-overlay')!;
 const contactSheetGrid = document.getElementById('contact-sheet-grid')!;
 const contactSheetHeading = document.getElementById('contact-sheet-heading')!;
 const geneSlidersContainer = document.getElementById('gene-sliders-container')!;
+
+const controlPanel = document.getElementById('control-panel')!;
+const trellisPanel = document.getElementById('trellis-panel')!;
+const trellisDrawHint = document.getElementById('trellis-draw-hint');
+const btnClearPath = document.getElementById('btn-clear-path');
+const toggleTrellisMesh = document.getElementById('toggle-trellis-mesh') as HTMLInputElement | null;
+const btnExportGuideJson = document.getElementById('btn-export-guide-json');
+const btnCopyTrellisCode = document.getElementById('btn-copy-trellis-code');
+
+// Trellis Presets & State
+const TRELLIS_PRESETS: Record<string, Vec3[][]> = {
+  arch: [
+    [
+      [-1.3, 0, 0],
+      [-1.15, 1.4, 0],
+      [-0.75, 2.5, 0],
+      [0, 3.1, 0],
+      [0.75, 2.5, 0],
+      [1.15, 1.4, 0],
+      [1.3, 0, 0],
+    ],
+  ],
+  pole: [
+    [
+      [0, 0, 0],
+      [0, 1.2, 0],
+      [0, 2.4, 0],
+      [0, 3.6, 0],
+    ],
+  ],
+  zigzag: [
+    [
+      [-0.85, 0, 0],
+      [0.85, 0.9, 0],
+      [-0.85, 1.8, 0],
+      [0.85, 2.7, 0],
+      [0, 3.6, 0],
+    ],
+  ],
+  spiral: [
+    (() => {
+      const pts: Vec3[] = [];
+      const turns = 3.2;
+      const steps = 40;
+      for (let s = 0; s <= steps; s++) {
+        const t = s / steps;
+        const theta = t * Math.PI * 2 * turns;
+        const r = (1 - t * 0.55) * 0.8;
+        pts.push([r * Math.cos(theta), t * 3.6, r * Math.sin(theta)]);
+      }
+      return pts;
+    })(),
+  ],
+};
+
+let activeGuide: GrowthGuide = { paths: TRELLIS_PRESETS['arch']! };
+let isDrawMode = false;
+let customPathPoints: Vec3[] = [
+  [-0.6, 0, 0],
+  [-0.2, 1.2, 0],
+  [0.3, 2.2, 0],
+  [0.6, 3.4, 0],
+];
 
 // 1. Setup Three.js scene & renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -121,11 +187,54 @@ function updateTelemetry(plant: Plant): void {
   scrubber.max = plant.duration.toFixed(3);
 }
 
+const trellisMeshGroup = new THREE.Group();
+garden.scene.add(trellisMeshGroup);
+
+function updateTrellisMesh(): void {
+  while (trellisMeshGroup.children.length > 0) {
+    const child = trellisMeshGroup.children[0] as THREE.Mesh;
+    trellisMeshGroup.remove(child);
+    child.geometry?.dispose();
+    if (child.material) {
+      if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
+      else child.material.dispose();
+    }
+  }
+
+  const isVine = activeSpecies.generator === 'vine';
+  const showMesh = toggleTrellisMesh?.checked ?? true;
+  if (!isVine || !showMesh || !activeGuide?.paths) {
+    trellisMeshGroup.visible = false;
+    return;
+  }
+
+  trellisMeshGroup.visible = true;
+  const trellisMat = new THREE.MeshStandardMaterial({
+    color: 0x3d2c1e,
+    roughness: 0.85,
+    metalness: 0.05,
+  });
+
+  for (const path of activeGuide.paths) {
+    if (path.length < 2) continue;
+    const curvePoints = path.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+    const curve = new THREE.CatmullRomCurve3(curvePoints);
+    const tubeGeo = new THREE.TubeGeometry(curve, Math.max(20, path.length * 8), 0.026, 8, false);
+    const tubeMesh = new THREE.Mesh(tubeGeo, trellisMat);
+    trellisMeshGroup.add(tubeMesh);
+  }
+}
+
 function frameCamera(): void {
   if (!currentPlant) return;
-  const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
-  controls.target.set(0, tipY * 0.6, 0);
-  camera.position.set(1.6, tipY * 0.85 + 0.9, 5.0);
+  if (activeSpecies.generator === 'vine') {
+    controls.target.set(0, 1.7, 0);
+    camera.position.set(0.0, 1.8, 5.8);
+  } else {
+    const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
+    controls.target.set(0, tipY * 0.6, 0);
+    camera.position.set(1.6, tipY * 0.85 + 0.9, 5.0);
+  }
   controls.update();
 }
 
@@ -134,14 +243,18 @@ function loadPlant(refocus = false, preserveTime = true): void {
     garden.remove(currentHandle);
   }
 
+  const guide = activeSpecies.generator === 'vine' ? activeGuide : undefined;
+
   currentPlant = growPlant({
     species: activeSpecies,
     seed: currentSeed,
     overrides: currentOverrides,
+    guide,
   });
 
   currentHandle = garden.add(currentPlant);
   updateTelemetry(currentPlant);
+  updateTrellisMesh();
 
   if (preserveTime && currentPlant) {
     const targetTime =
@@ -520,19 +633,181 @@ function renderContactSheet(): void {
 
 function switchToLab(): void {
   tabLab.classList.add('active');
+  tabTrellis.classList.remove('active');
   tabContactSheet.classList.remove('active');
   contactSheetOverlay.classList.remove('active');
+  controlPanel.style.display = 'flex';
+  trellisPanel.style.display = 'none';
+  isDrawMode = false;
+  if (trellisDrawHint) trellisDrawHint.style.display = 'none';
+}
+
+function switchToTrellis(): void {
+  tabTrellis.classList.add('active');
+  tabLab.classList.remove('active');
+  tabContactSheet.classList.remove('active');
+  contactSheetOverlay.classList.remove('active');
+  controlPanel.style.display = 'none';
+  trellisPanel.style.display = 'flex';
+
+  if (activeSpecies.id !== 'morning-glory') {
+    selectSpecies('morning-glory');
+  }
+  controls.target.set(0, 1.7, 0);
+  camera.position.set(0.0, 1.8, 5.8);
+  controls.update();
+  loadPlant(false, true);
 }
 
 function switchToContactSheet(): void {
   tabContactSheet.classList.add('active');
   tabLab.classList.remove('active');
+  tabTrellis.classList.remove('active');
   contactSheetOverlay.classList.add('active');
+  isDrawMode = false;
   renderContactSheet();
 }
 
 tabLab.addEventListener('click', switchToLab);
+tabTrellis.addEventListener('click', switchToTrellis);
 tabContactSheet.addEventListener('click', switchToContactSheet);
+
+// Trellis Preset Controls
+document.querySelectorAll('[data-trellis-preset]').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('[data-trellis-preset]').forEach((b) => b.classList.remove('active'));
+    const el = e.currentTarget as HTMLElement;
+    el.classList.add('active');
+    const preset = el.dataset.trellisPreset;
+
+    if (preset === 'draw') {
+      isDrawMode = true;
+      if (trellisDrawHint) trellisDrawHint.style.display = 'block';
+      activeGuide = { paths: [customPathPoints] };
+    } else if (preset && TRELLIS_PRESETS[preset]) {
+      isDrawMode = false;
+      if (trellisDrawHint) trellisDrawHint.style.display = 'none';
+      activeGuide = { paths: TRELLIS_PRESETS[preset]! };
+    }
+    loadPlant(false, true);
+  });
+});
+
+// Interactive Click-to-Draw Trellis Path on Z=0 Plane
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const drawPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (!isDrawMode || e.button !== 0) return;
+
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersectPoint = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(drawPlane, intersectPoint)) {
+    const pt: Vec3 = [
+      Math.round(intersectPoint.x * 100) / 100,
+      Math.max(0, Math.round(intersectPoint.y * 100) / 100),
+      0,
+    ];
+    customPathPoints.push(pt);
+    activeGuide = { paths: [customPathPoints] };
+    loadPlant(false, true);
+  }
+});
+
+btnClearPath?.addEventListener('click', () => {
+  customPathPoints = [
+    [0, 0, 0],
+    [0, 0.6, 0],
+  ];
+  activeGuide = { paths: [customPathPoints] };
+  loadPlant(false, true);
+});
+
+// Trellis Sliders
+const sliderHelixRadius = document.getElementById(
+  'slider-trellis-helixRadius',
+) as HTMLInputElement | null;
+const valHelixRadius = document.getElementById('val-trellis-helixRadius');
+sliderHelixRadius?.addEventListener('input', () => {
+  const v = parseFloat(sliderHelixRadius.value);
+  if (valHelixRadius) valHelixRadius.textContent = v.toFixed(2);
+  currentOverrides['vine.helixRadius'] = v;
+  loadPlant(false, true);
+});
+
+const sliderHelixPitch = document.getElementById(
+  'slider-trellis-helixPitch',
+) as HTMLInputElement | null;
+const valHelixPitch = document.getElementById('val-trellis-helixPitch');
+sliderHelixPitch?.addEventListener('input', () => {
+  const v = parseFloat(sliderHelixPitch.value);
+  if (valHelixPitch) valHelixPitch.textContent = v.toFixed(2);
+  currentOverrides['vine.helixPitch'] = v;
+  loadPlant(false, true);
+});
+
+const sliderFlowerDensity = document.getElementById(
+  'slider-trellis-flowerDensity',
+) as HTMLInputElement | null;
+const valFlowerDensity = document.getElementById('val-trellis-flowerDensity');
+sliderFlowerDensity?.addEventListener('input', () => {
+  const v = parseFloat(sliderFlowerDensity.value);
+  if (valFlowerDensity) valFlowerDensity.textContent = v.toFixed(2);
+  currentOverrides['vine.flowerDensity'] = v;
+  loadPlant(false, true);
+});
+
+const sliderPBranch = document.getElementById(
+  'slider-trellis-pBranch',
+) as HTMLInputElement | null;
+const valPBranch = document.getElementById('val-trellis-pBranch');
+sliderPBranch?.addEventListener('input', () => {
+  const v = parseFloat(sliderPBranch.value);
+  if (valPBranch) valPBranch.textContent = v.toFixed(2);
+  currentOverrides['vine.pBranch'] = v;
+  loadPlant(false, true);
+});
+
+toggleTrellisMesh?.addEventListener('change', () => {
+  updateTrellisMesh();
+});
+
+// Export Trellis Guide JSON
+btnExportGuideJson?.addEventListener('click', () => {
+  const json = JSON.stringify(activeGuide, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trellis-guide-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Copy Code Snippet
+btnCopyTrellisCode?.addEventListener('click', () => {
+  const code = `import { growPlant } from '@flower-grower/core';
+import { morningGlory } from '@flower-grower/species';
+
+const plant = growPlant({
+  species: morningGlory,
+  seed: ${currentSeed},
+  guide: ${JSON.stringify(activeGuide, null, 2)},
+});
+`;
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = btnCopyTrellisCode.textContent;
+    btnCopyTrellisCode.textContent = '✅ Copied!';
+    setTimeout(() => {
+      btnCopyTrellisCode.textContent = originalText;
+    }, 1500);
+  });
+});
 
 // Export JSON
 btnExportJson.addEventListener('click', () => {

@@ -108,6 +108,38 @@ export const ROSE_HIP_SHAPE: OrganShape = {
   veinDepth: 0.0,
 };
 
+export const MORNING_GLORY_COROLLA_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.18, 0.26, 0.4, 0.6, 0.82, 0.96, 1.0, 0.95, 0.85, 0.65],
+  tip: 'round',
+  tipSharpness: 0.2,
+  baseNarrow: 0.82,
+  cupDepth: 0.48,
+  curlTip: 0.12,
+  reflex: 0.18,
+  ruffle: 0.05,
+  ruffleFreq: 5.0,
+  midribBend: 0.22,
+  veinCount: 5,
+  veinDepth: 0.02,
+};
+
+export const MORNING_GLORY_LEAF_SHAPE: OrganShape = {
+  length: 1,
+  widthProfile: [0.38, 0.72, 0.96, 1.0, 0.88, 0.72, 0.52, 0.28, 0.0],
+  tip: 'point',
+  tipSharpness: 0.5,
+  baseNarrow: 0.12,
+  cupDepth: 0.14,
+  curlTip: 0.15,
+  reflex: 0.06,
+  ruffle: 0.03,
+  ruffleFreq: 3.5,
+  midribBend: 0.25,
+  veinCount: 7,
+  veinDepth: 0.015,
+};
+
 export const DAISY_CENTER_SHAPE: OrganShape = {
   length: 1,
   widthProfile: [0.5, 0.9, 1.0, 0.9, 0.5],

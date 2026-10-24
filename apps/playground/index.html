@@ -701,12 +701,13 @@
         <div class="logo-badge">🌸</div>
         <div class="header-text">
           <h1>Flower Grower</h1>
-          <p>Phase 5 • Botanical Style & Shaders</p>
+          <p>Phase 6 • Vines & Trellis Editor</p>
         </div>
       </div>
 
       <div class="tabs-bar">
         <button id="tab-lab" class="tab-btn active">🔬 Flower Lab</button>
+        <button id="tab-trellis" class="tab-btn">🪴 Trellis & Vines</button>
         <button id="tab-contact-sheet" class="tab-btn">
           📑 Contact Sheet (24 Seeds)
         </button>
@@ -722,6 +723,7 @@
         <button class="species-pill" data-species="peony">🌸 Peony</button>
         <button class="species-pill" data-species="ranunculus">🏵️ Ranunculus</button>
         <button class="species-pill" data-species="tulip">🌷 Tulip</button>
+        <button class="species-pill" data-species="morning-glory">🌺 Morning Glory</button>
       </div>
 
       <div class="panel-section-title">Illustration Style</div>
@@ -807,6 +809,69 @@
       <button id="btn-export-json" class="btn">💾 Export Plant JSON</button>
     </div>
 
+    <!-- Trellis Control Panel (Active in Trellis Tab) -->
+    <div id="trellis-panel" class="control-panel" style="display: none;">
+      <div class="panel-section-title">Trellis Structure</div>
+      <div class="button-group" style="flex-wrap: wrap;">
+        <button class="button-group-item active" data-trellis-preset="arch">🏛️ Arch</button>
+        <button class="button-group-item" data-trellis-preset="pole">🪵 Pole</button>
+        <button class="button-group-item" data-trellis-preset="zigzag">🪜 Zig-Zag</button>
+        <button class="button-group-item" data-trellis-preset="spiral">🌀 Spiral</button>
+        <button class="button-group-item" data-trellis-preset="draw">✏️ Draw</button>
+      </div>
+
+      <div id="trellis-draw-hint" style="display: none; font-size: 11px; color: #34d399; background: rgba(16, 185, 129, 0.1); padding: 8px 10px; border-radius: 6px; border: 1px dashed #10b981;">
+        🖱️ Click in 3D viewport to plot polyline guide points.
+        <button id="btn-clear-path" class="btn" style="margin-top: 6px; width: 100%; font-size: 11px;">🗑️ Clear Drawn Path</button>
+      </div>
+
+      <div class="panel-section-title">Climbing & Helical Genes</div>
+      <div class="gene-slider-row">
+        <div class="gene-slider-label">
+          <span class="gene-slider-name">Helix Radius</span>
+          <span id="val-trellis-helixRadius" class="gene-slider-val">0.08</span>
+        </div>
+        <input id="slider-trellis-helixRadius" type="range" class="gene-slider" min="0.03" max="0.32" step="0.01" value="0.08" />
+      </div>
+
+      <div class="gene-slider-row">
+        <div class="gene-slider-label">
+          <span class="gene-slider-name">Helix Pitch</span>
+          <span id="val-trellis-helixPitch" class="gene-slider-val">0.48</span>
+        </div>
+        <input id="slider-trellis-helixPitch" type="range" class="gene-slider" min="0.2" max="1.2" step="0.02" value="0.48" />
+      </div>
+
+      <div class="gene-slider-row">
+        <div class="gene-slider-label">
+          <span class="gene-slider-name">Flower Density</span>
+          <span id="val-trellis-flowerDensity" class="gene-slider-val">0.25</span>
+        </div>
+        <input id="slider-trellis-flowerDensity" type="range" class="gene-slider" min="0.05" max="0.6" step="0.02" value="0.25" />
+      </div>
+
+      <div class="gene-slider-row">
+        <div class="gene-slider-label">
+          <span class="gene-slider-name">Tendril Branching</span>
+          <span id="val-trellis-pBranch" class="gene-slider-val">0.18</span>
+        </div>
+        <input id="slider-trellis-pBranch" type="range" class="gene-slider" min="0.0" max="0.4" step="0.02" value="0.18" />
+      </div>
+
+      <div class="panel-section-title">Visual Options</div>
+      <div class="toggle-list">
+        <label class="toggle-item">
+          <span>Show Trellis Guide Mesh</span>
+          <input type="checkbox" id="toggle-trellis-mesh" checked />
+        </label>
+      </div>
+
+      <div class="btn-actions-grid">
+        <button id="btn-export-guide-json" class="btn">💾 Export Guide</button>
+        <button id="btn-copy-trellis-code" class="btn">📋 Copy Code</button>
+      </div>
+    </div>
+
     <!-- Bottom Timeline Bar -->
     <div id="timeline-bar" class="timeline-bar">
       <div class="timeline-row">
@@ -858,12 +923,13 @@
             morphology. Click any specimen to inspect and scrub in 3D.
           </p>
         </div>
-        <div class="species-pills" style="width: 360px">
+        <div class="species-pills" style="width: 420px">
           <button class="species-pill active" data-cs-species="daisy">🌼 Daisy</button>
           <button class="species-pill" data-cs-species="rose">🌹 Rose</button>
           <button class="species-pill" data-cs-species="peony">🌸 Peony</button>
           <button class="species-pill" data-cs-species="ranunculus">🏵️ Ranunculus</button>
           <button class="species-pill" data-cs-species="tulip">🌷 Tulip</button>
+          <button class="species-pill" data-cs-species="morning-glory">🌺 Morning Glory</button>
         </div>
       </div>
 

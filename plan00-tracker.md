@@ -17,7 +17,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
 | 4 | Genome and species v1 | Done | Yes (contact sheet) | 2026-10-23 | 2026-10-23 | b1e6dd6, f408a18 | |
 | 5 | Botanical style | Done | Yes (look) | 2026-10-24 | 2026-10-24 | 2509aef, c07c368 | |
-| 6 | Vines and the trellis | Not started | No | | | | |
+| 6 | Vines and the trellis | Done | No | 2026-10-24 | 2026-10-24 | [commit] | |
 | 7 | Garden scale | Not started | No | | | | |
 | 8 | Overlay and DOM guides | Not started | No | | | | |
 | 9 | More generators and species | Not started | Yes (contact sheets) | | | | |
@@ -56,9 +56,9 @@ Tick items as they are verified. Add sub-items if a phase needs them.
 - [x] Petal transparency method decided (opaque depth pass with post-process edge softness)
 
 ### Phase 6: Vines and the trellis
-- [ ] `vineWalker` follows an arbitrary drawn polyline
-- [ ] Helical wrapping looks right from any camera angle
-- [ ] Morning-glory species and trellis editor tab
+- [x] `vineWalker` follows an arbitrary drawn polyline
+- [x] Helical wrapping looks right from any camera angle
+- [x] Morning-glory species and trellis editor tab
 
 ### Phase 7: Garden scale
 - [ ] 100 plants at 60 fps on the test machine

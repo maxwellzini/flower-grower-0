@@ -7,6 +7,7 @@ import type {
   Plant,
   PlantBounds,
   RNG,
+  Stem,
   StemNode,
   Vec3,
 } from './types.js';
@@ -14,6 +15,7 @@ import { createRNG } from './rng.js';
 import type { Genome } from './genome/schema.js';
 import { sample, type Species } from './genome/operations.js';
 import { straightStem } from './generators/straightStem.js';
+import { vineWalker } from './generators/vineWalker.js';
 import {
   leafArrangement,
   type LeafArrangementType,
@@ -23,7 +25,7 @@ import {
   tulipWhorls,
   whorls,
 } from './organs/placement.js';
-import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
+import { addVec3, cleanZero, crossVec3, normalizeVec3, scaleVec3 } from './math.js';
 
 function computeStemFrameAtNode(
   nodes: readonly StemNode[],
@@ -41,6 +43,241 @@ function computeStemFrameAtNode(
   const perp1 = normalizeVec3(crossVec3(dir, upRef));
   const perp2 = normalizeVec3(crossVec3(dir, perp1));
   return { dir, perp1, perp2 };
+}
+
+function assembleVine(params: {
+  seed: number;
+  species: Species;
+  genome: Genome;
+  stems: Stem[];
+  shapes: OrganShape[];
+  leafRng: RNG;
+  flowerRng: RNG;
+  petalRng: RNG;
+}): Plant {
+  const { seed, species, genome, stems, shapes, leafRng, flowerRng, petalRng } = params;
+  const organs: Organ[] = [];
+  let organId = 0;
+
+  const leafColor = (genome['color.leaf'] as ColorGene | undefined) ?? {
+    light: 0.38,
+    chroma: 0.16,
+    hue: 135,
+  };
+  const petalColor = (genome['color.petal'] as ColorGene | undefined) ?? {
+    light: 0.55,
+    chroma: 0.22,
+    hue: 265,
+  };
+  const centerColor = (genome['color.center'] as ColorGene | undefined) ?? {
+    light: 0.92,
+    chroma: 0.12,
+    hue: 95,
+  };
+
+  const leafLen = Number(genome['leaf.length'] ?? 0.45);
+  const leafWid = Number(genome['leaf.width'] ?? 0.42);
+  const petalLen = Number(genome['petal.length'] ?? 0.55);
+  const petalWid = Number(genome['petal.width'] ?? 0.45);
+  const headScale = Number(genome['flower.headScale'] ?? 1.0);
+  const flowerDensity = Number(genome['vine.flowerDensity'] ?? 0.25);
+
+  const minCoord: Vec3 = [Infinity, Infinity, Infinity];
+  const maxCoord: Vec3 = [-Infinity, -Infinity, -Infinity];
+
+  function updateBounds(pos: Vec3): void {
+    minCoord[0] = Math.min(minCoord[0], pos[0]);
+    minCoord[1] = Math.min(minCoord[1], pos[1]);
+    minCoord[2] = Math.min(minCoord[2], pos[2]);
+    maxCoord[0] = Math.max(maxCoord[0], pos[0]);
+    maxCoord[1] = Math.max(maxCoord[1], pos[1]);
+    maxCoord[2] = Math.max(maxCoord[2], pos[2]);
+  }
+
+  for (const stem of stems) {
+    const isMain = stem.kind === 'vine';
+    const stepInterval = isMain ? 3 : 2;
+
+    for (let i = 2; i < stem.nodes.length - 1; i++) {
+      const node = stem.nodes[i]!;
+      updateBounds(node.pos);
+
+      // Frame at node
+      const { dir, perp1, perp2 } = computeStemFrameAtNode(stem.nodes, i);
+      const angle = (i * 2.39996) % (Math.PI * 2);
+      const outVec = normalizeVec3(
+        addVec3(scaleVec3(perp1, Math.cos(angle)), scaleVec3(perp2, Math.sin(angle))),
+      );
+
+      // 1. Attach foliage (heart-shaped cordate leaves)
+      if (i % stepInterval === 0) {
+        const leafOrigin = addVec3(node.pos, scaleVec3(outVec, node.radius * 0.9));
+        updateBounds(leafOrigin);
+
+        const leafTangent = normalizeVec3(addVec3(outVec, scaleVec3(dir, 0.2)));
+        const leafNormal = normalizeVec3(crossVec3(dir, outVec));
+        const leafBinormal = crossVec3(leafTangent, leafNormal);
+
+        const stagger = leafRng.range(0.0, 0.15);
+        organs.push({
+          id: organId++,
+          type: 'leaf',
+          stemId: stem.id,
+          stemNode: i,
+          origin: leafOrigin,
+          tangent: leafTangent,
+          normal: leafNormal,
+          binormal: leafBinormal,
+          shape: 1, // leaf shape
+          scale: leafLen * leafRng.range(0.85, 1.15),
+          rotation: angle,
+          color: {
+            light: leafColor.light + leafRng.range(-0.02, 0.02),
+            chroma: leafColor.chroma,
+            hue: leafColor.hue + leafRng.range(-3, 3),
+          },
+          birth: node.birth + 0.15 + stagger,
+          growDuration: 0.5,
+          openDuration: 0.4,
+          openness0: 0.8,
+          age: 0,
+          width: leafWid,
+        });
+      }
+
+      // 2. Attach trumpet flowers at eligible nodes along the vine
+      const isFlowerNode = isMain
+        ? (i >= 8 && i % 8 === 0 && flowerRng.next() < flowerDensity * 3.5)
+        : (i === Math.floor(stem.nodes.length * 0.6) && flowerRng.next() < 0.6);
+
+      if (isFlowerNode) {
+        const flowerOrigin = addVec3(node.pos, scaleVec3(outVec, 0.1));
+        const flowerDir = normalizeVec3(addVec3(outVec, [0, 0.4, 0]));
+        const fUp: Vec3 = Math.abs(flowerDir[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+        const fNormal = normalizeVec3(crossVec3(flowerDir, fUp));
+        const fBinormal = crossVec3(flowerDir, fNormal);
+
+        const fStagger = flowerRng.range(0.0, 0.2);
+        const fBirth = node.birth + 0.25 + fStagger;
+
+        // 5 flared trumpet corolla lobes
+        const numLobes = 5;
+        for (let k = 0; k < numLobes; k++) {
+          const lobeAngle = (k * Math.PI * 2) / numLobes;
+          const cosA = Math.cos(lobeAngle);
+          const sinA = Math.sin(lobeAngle);
+
+          const radialDir = addVec3(scaleVec3(fNormal, cosA), scaleVec3(fBinormal, sinA));
+          // Flare outward at ~28 degrees from flowerDir
+          const lobeTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, 0.88), scaleVec3(radialDir, 0.48)));
+          const lobeNormal = normalizeVec3(crossVec3(radialDir, flowerDir));
+          const lobeBinormal = crossVec3(lobeTangent, lobeNormal);
+
+          organs.push({
+            id: organId++,
+            type: 'petal',
+            stemId: stem.id,
+            stemNode: i,
+            origin: flowerOrigin,
+            tangent: lobeTangent,
+            normal: lobeNormal,
+            binormal: lobeBinormal,
+            shape: 0, // corolla shape
+            scale: petalLen * headScale,
+            rotation: lobeAngle,
+            color: {
+              light: petalColor.light + petalRng.range(-0.02, 0.02),
+              chroma: petalColor.chroma,
+              hue: petalColor.hue + petalRng.range(-4, 4),
+            },
+            birth: fBirth,
+            growDuration: 0.55,
+            openDuration: 0.65,
+            openness0: 1.0,
+            age: 0,
+            width: petalWid * headScale,
+          });
+        }
+
+        // Calyx sepals (5 green bracts clasping the flower base)
+        for (let s = 0; s < 5; s++) {
+          const sepalAngle = (s * Math.PI * 2) / 5 + 0.35;
+          const sRad = addVec3(scaleVec3(fNormal, Math.cos(sepalAngle)), scaleVec3(fBinormal, Math.sin(sepalAngle)));
+          const sTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, 0.7), scaleVec3(sRad, 0.3)));
+          const sNormal = normalizeVec3(crossVec3(sRad, flowerDir));
+          const sBinormal = crossVec3(sTangent, sNormal);
+
+          organs.push({
+            id: organId++,
+            type: 'sepal',
+            stemId: stem.id,
+            stemNode: i,
+            origin: flowerOrigin,
+            tangent: sTangent,
+            normal: sNormal,
+            binormal: sBinormal,
+            shape: 2, // sepal shape
+            scale: petalLen * 0.38 * headScale,
+            rotation: sepalAngle,
+            color: { light: 0.32, chroma: 0.16, hue: 130 },
+            birth: fBirth - 0.1,
+            growDuration: 0.35,
+            openDuration: 0.2,
+            openness0: 0.2,
+            age: 0,
+          });
+        }
+
+        // Center / stamen throat
+        organs.push({
+          id: organId++,
+          type: 'center',
+          stemId: stem.id,
+          stemNode: i,
+          origin: addVec3(flowerOrigin, scaleVec3(flowerDir, 0.06)),
+          tangent: flowerDir,
+          normal: fNormal,
+          binormal: fBinormal,
+          shape: 3,
+          scale: 0.04 * headScale,
+          rotation: 0,
+          color: centerColor,
+          birth: fBirth + 0.1,
+          growDuration: 0.3,
+          openDuration: 0.2,
+          openness0: 0.5,
+          age: 0,
+        });
+      }
+    }
+  }
+
+  let maxEndTime = 0;
+  for (const o of organs) {
+    const end = o.birth + o.growDuration + o.openDuration;
+    if (end > maxEndTime) maxEndTime = end;
+  }
+  for (const s of stems) {
+    const lastNode = s.nodes[s.nodes.length - 1];
+    if (lastNode && lastNode.birth > maxEndTime) maxEndTime = lastNode.birth;
+  }
+
+  const bounds: PlantBounds = {
+    min: [minCoord[0] - 0.5, Math.min(0, minCoord[1] - 0.2), minCoord[2] - 0.5],
+    max: [maxCoord[0] + 0.5, maxCoord[1] + 0.5, maxCoord[2] + 0.5],
+  };
+
+  return {
+    seed,
+    speciesId: species.id,
+    genome,
+    generatorVersion: 1,
+    stems,
+    organs,
+    shapes,
+    duration: Math.max(1.0, maxEndTime),
+    bounds,
+  };
 }
 
 export interface GrowPlantOptions {
@@ -80,18 +317,36 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const noiseAmp = Number(genome['stem.noiseAmp'] ?? 0.07);
   const growSpeed = Number(genome['stem.growSpeed'] ?? 5.5);
 
-  const stems = straightStem(
-    options.guide,
-    {
-      height: stemHeight,
-      segments,
-      baseRadius,
-      tipRadius,
-      noiseAmp,
-      growSpeed,
-    },
-    stemRng,
-  );
+  const isVine = options.species.generator === 'vine';
+  const stems = isVine
+    ? vineWalker(
+        options.guide,
+        {
+          helixRadius: Number(genome['vine.helixRadius'] ?? 0.08),
+          helixPitch: Number(genome['vine.helixPitch'] ?? 0.48),
+          wFollow: Number(genome['vine.wFollow'] ?? 0.85),
+          wStick: Number(genome['vine.wStick'] ?? 0.45),
+          wWander: Number(genome['vine.wWander'] ?? 0.08),
+          stepLength: Number(genome['vine.stepLength'] ?? 0.06),
+          pBranch: Number(genome['vine.pBranch'] ?? 0.15),
+          baseRadius: Number(genome['stem.baseRadius'] ?? 0.035),
+          tipRadius: Number(genome['stem.tipRadius'] ?? 0.016),
+          growSpeed: Number(genome['stem.growSpeed'] ?? 4.5),
+        },
+        stemRng,
+      )
+    : straightStem(
+        options.guide,
+        {
+          height: stemHeight,
+          segments,
+          baseRadius,
+          tipRadius,
+          noiseAmp,
+          growSpeed,
+        },
+        stemRng,
+      );
 
   const mainStem = stems[0]!;
   const tipNodeIndex = mainStem.nodes.length - 1;
@@ -190,6 +445,19 @@ export function growPlant(options: GrowPlantOptions): Plant {
       veinDepth: 0.0,
     },
   ];
+
+  if (isVine) {
+    return assembleVine({
+      seed,
+      species: options.species,
+      genome,
+      stems,
+      shapes,
+      leafRng,
+      flowerRng,
+      petalRng,
+    });
+  }
 
   const petalShapeIdx = 0;
   const leafShapeIdx = 1;
