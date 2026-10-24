@@ -364,7 +364,7 @@ function renderGeneSliders(): void {
   }
 }
 
-// 3D Thumbnail Generator for Contact Sheet
+// 3D Isometric Thumbnail Generator for Contact Sheet
 const thumbCanvas = document.createElement('canvas');
 thumbCanvas.width = 240;
 thumbCanvas.height = 200;
@@ -377,23 +377,38 @@ const thumbRenderer = new THREE.WebGLRenderer({
 thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping;
 thumbRenderer.toneMappingExposure = 1.15;
 
-const thumbCamera = new THREE.PerspectiveCamera(42, 240 / 200, 0.1, 50);
+const thumbAspect = 240 / 200;
+const thumbCamera = new THREE.OrthographicCamera(-1.8 * thumbAspect, 1.8 * thumbAspect, 1.8, -1.8, 0.1, 50);
 
 const thumbGarden = new Garden({ renderer: thumbRenderer });
 const thumbDirLight = new THREE.DirectionalLight(0xfff7ea, 1.35);
-thumbDirLight.position.set(2, 6, 3);
+thumbDirLight.position.set(5, 10, 6);
 thumbGarden.scene.add(thumbDirLight);
-const thumbAmbLight = new THREE.AmbientLight(0xd8e8f8, 0.7);
+const thumbAmbLight = new THREE.AmbientLight(0xd8e8f8, 0.75);
 thumbGarden.scene.add(thumbAmbLight);
 
 function createSeedThumbnail(plant: Plant): string {
   const mainStem = plant.stems[0];
   const tipNode = mainStem?.nodes[mainStem.nodes.length - 1];
   const headHeight = tipNode ? tipNode.pos[1] : 2.2;
+  const totalHeight = headHeight + 0.6; // account for petals atop receptacle
 
-  // 3/4 oblique perspective framing both stem posture and flower head
-  thumbCamera.position.set(1.4, headHeight * 0.7 + 0.6, 2.8);
-  thumbCamera.lookAt(0, headHeight * 0.55, 0);
+  // True isometric projection: 30° elevation, 45° azimuth
+  const frustumH = Math.max(3.0, totalHeight + 0.4);
+  const halfH = frustumH * 0.5;
+  const halfW = halfH * thumbAspect;
+
+  thumbCamera.left = -halfW;
+  thumbCamera.right = halfW;
+  thumbCamera.top = halfH;
+  thumbCamera.bottom = -halfH;
+  thumbCamera.updateProjectionMatrix();
+
+  const targetY = totalHeight * 0.48; // vertically centered in card
+  const isoDist = 12;
+  // Axonometric / isometric offset vector [1, 0.75, 1] normalized
+  thumbCamera.position.set(isoDist * 0.65, targetY + isoDist * 0.55, isoDist * 0.65);
+  thumbCamera.lookAt(0, targetY, 0);
 
   const h = thumbGarden.add(plant);
   h.setTime(plant.duration);
