@@ -16,7 +16,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | 2 | Core math | Done | No | 2026-10-23 | 2026-10-23 | 920370e | |
 | 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
 | 4 | Genome and species v1 | Done | Yes (contact sheet) | 2026-10-23 | 2026-10-23 | b1e6dd6, f408a18 | |
-| 5 | Botanical style | Awaiting review | Yes (look) | 2026-10-24 | | 2509aef | |
+| 5 | Botanical style | Done | Yes (look) | 2026-10-24 | 2026-10-24 | 2509aef, c07c368 | |
 | 6 | Vines and the trellis | Not started | No | | | | |
 | 7 | Garden scale | Not started | No | | | | |
 | 8 | Overlay and DOM guides | Not started | No | | | | |
@@ -52,7 +52,7 @@ Tick items as they are verified. Add sub-items if a phase needs them.
 ### Phase 5: Botanical style
 - [x] Normal and depth pass, ink edges, veins, wrap diffuse
 - [x] Looks right at the 3 test camera angles
-- [ ] User review done
+- [x] User review done
 - [x] Petal transparency method decided (opaque depth pass with post-process edge softness)
 
 ### Phase 6: Vines and the trellis
