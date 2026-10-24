@@ -3,16 +3,16 @@ import { TULIP_LEAF_SHAPE } from '@flower-grower/core';
 
 export const TULIP_PETAL_SHAPE: OrganShape = {
   length: 1,
-  widthProfile: [0.14, 0.35, 0.68, 0.9, 1.0, 0.98, 0.9, 0.78, 0.58, 0.28, 0.0],
+  widthProfile: [0.22, 0.48, 0.74, 0.92, 1.0, 0.98, 0.92, 0.84, 0.72, 0.55],
   tip: 'round',
-  tipSharpness: 0.2,
-  baseNarrow: 0.38,
-  cupDepth: 0.42, // Concave chalice shell
+  tipSharpness: 0.15,
+  baseNarrow: 0.35,
+  cupDepth: 0.38, // Concave chalice shell
   curlTip: 0.0,
   reflex: 0.0,
   ruffle: 0.0,
   ruffleFreq: 1.0,
-  midribBend: 0.4, // Classic outward belly bow + inward rim clasp
+  midribBend: 0.38, // Classic outward belly bow + inward rim clasp
   veinCount: 5,
   veinDepth: 0.02,
 };
@@ -30,15 +30,15 @@ export const tulip: Species = {
     'stem.noiseAmp': { lo: 0.04, hi: 0.12 },
     'stem.growSpeed': { lo: 4.5, hi: 6.5 },
     'petal.count': { lo: 6, hi: 6 }, // 6 tepals
-    'petal.length': { lo: 0.85, hi: 1.15 },
-    'petal.width': { lo: 0.44, hi: 0.54 }, // realistic tepal proportion sealing the goblet
-    'petal.cupDepth': { lo: 0.32, hi: 0.44 },
+    'petal.length': { lo: 0.95, hi: 1.25 },
+    'petal.width': { lo: 0.62, hi: 0.74 }, // broad tepals seamlessly cupping goblet
+    'petal.cupDepth': { lo: 0.32, hi: 0.42 },
     'petal.curlTip': { lo: 0.0, hi: 0.0 },
     'petal.reflex': { lo: 0.0, hi: 0.0 },
     'petal.midribBend': { lo: 0.34, hi: 0.44 },
     'flower.whorlLayers': { lo: 2, hi: 2 }, // 3 inner + 3 outer
-    'flower.whorlTilt': { lo: 1.25, hi: 1.34 }, // erect goblet
-    'flower.whorlRadius': { lo: 0.038, hi: 0.055 }, // snug attachment directly at stem neck
+    'flower.whorlTilt': { lo: 1.28, hi: 1.36 }, // erect goblet
+    'flower.whorlRadius': { lo: 0.042, hi: 0.058 }, // snug attachment directly at stem neck
     'flower.headScale': { lo: 0.92, hi: 1.12 },
     'flower.sepalCount': { lo: 0, hi: 0 }, // no calyx on tulip
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets

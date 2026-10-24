@@ -3,16 +3,16 @@ import { ROSE_LEAF_SHAPE } from '@flower-grower/core';
 
 export const ROSE_PETAL_SHAPE: OrganShape = {
   length: 1,
-  widthProfile: [0.18, 0.38, 0.62, 0.82, 0.95, 1.0, 1.0, 0.98, 0.94, 0.88],
-  tip: 'notch', // authentic apical cleft/notch flanked by rounded lobes
-  tipSharpness: 0.15,
+  widthProfile: [0.24, 0.45, 0.68, 0.86, 0.96, 1.0, 1.0, 0.98, 0.96, 0.92],
+  tip: 'notch', // authentic heart-shaped apical cleft flanked by two soft rounded lobes
+  tipSharpness: 0.1,
   baseNarrow: 0.35,
-  cupDepth: 0.38,
-  curlTip: 0.25,
-  reflex: 0.45,
-  ruffle: 0.035,
-  ruffleFreq: 3.5,
-  midribBend: 0.04,
+  cupDepth: 0.32,
+  curlTip: 0.18,
+  reflex: 0.35,
+  ruffle: 0.025,
+  ruffleFreq: 3.0,
+  midribBend: 0.02,
   veinCount: 5,
   veinDepth: 0.015,
 };
@@ -29,16 +29,16 @@ export const rose: Species = {
     'stem.tipRadius': { lo: 0.026, hi: 0.035 },
     'stem.noiseAmp': { lo: 0.06, hi: 0.16 },
     'stem.growSpeed': { lo: 4.5, hi: 6.5 },
-    'petal.count': { lo: 36, hi: 52 },
-    'petal.length': { lo: 0.75, hi: 1.05 },
-    'petal.width': { lo: 0.58, hi: 0.74 }, // realistic obcordate fan proportions
-    'petal.cupDepth': { lo: 0.32, hi: 0.46 }, // deep spoon-shaped cradle
-    'petal.curlTip': { lo: 0.25, hi: 0.42 },
-    'petal.reflex': { lo: 0.36, hi: 0.52 }, // sculpted revolute margins
-    'petal.midribBend': { lo: 0.0, hi: 0.04 },
+    'petal.count': { lo: 38, hi: 54 },
+    'petal.length': { lo: 0.85, hi: 1.15 },
+    'petal.width': { lo: 0.76, hi: 0.94 }, // authentic broad fan/obcordate proportions
+    'petal.cupDepth': { lo: 0.28, hi: 0.38 }, // deep spoon-shaped cradle
+    'petal.curlTip': { lo: 0.15, hi: 0.25 },
+    'petal.reflex': { lo: 0.30, hi: 0.44 }, // sculpted revolute margins
+    'petal.midribBend': { lo: 0.0, hi: 0.03 },
     'flower.whorlLayers': { lo: 5, hi: 6 },
-    'flower.whorlTilt': { lo: 0.22, hi: 0.36 },
-    'flower.whorlRadius': { lo: 0.07, hi: 0.12 },
+    'flower.whorlTilt': { lo: 0.30, hi: 0.44 },
+    'flower.whorlRadius': { lo: 0.09, hi: 0.13 },
     'flower.headScale': { lo: 0.9, hi: 1.15 },
     'flower.sepalCount': { lo: 5, hi: 5 },
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets in rose

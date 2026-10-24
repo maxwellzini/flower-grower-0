@@ -18,6 +18,8 @@ import {
   leafArrangement,
   type LeafArrangementType,
   phyllotaxis,
+  roseSpiral,
+  tulipWhorls,
   whorls,
 } from './organs/placement.js';
 import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
@@ -456,13 +458,29 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const whorlRadius = Number(genome['flower.whorlRadius'] ?? 0.08);
   const petalWidth = Number(genome['petal.width'] ?? 0.45);
 
-  const petalPlacements = whorls({
-    count: petalCount,
-    layers,
-    sizeFalloff: 0.92,
-    tilt: whorlTilt,
-    radius: whorlRadius,
-  });
+  let petalPlacements;
+  if (options.species.id === 'rose') {
+    petalPlacements = roseSpiral({
+      count: petalCount,
+      radius: whorlRadius,
+      tilt: whorlTilt,
+      baseAngle: petalRng.range(0, Math.PI * 2),
+    });
+  } else if (options.species.id === 'tulip') {
+    petalPlacements = tulipWhorls({
+      radius: whorlRadius,
+      tilt: whorlTilt,
+      baseAngle: petalRng.range(0, Math.PI * 2),
+    });
+  } else {
+    petalPlacements = whorls({
+      count: petalCount,
+      layers,
+      sizeFalloff: 0.92,
+      tilt: whorlTilt,
+      radius: whorlRadius,
+    });
+  }
 
   const petalColor = (genome['color.petal'] as ColorGene | undefined) ?? {
     light: 0.95,
@@ -474,6 +492,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
   for (const p of petalPlacements) {
     const angle = p.angle;
     const tilt = p.tilt;
+    const yaw = p.yaw ?? 0;
 
     const origin: Vec3 = [
       stemTipPos[0] + p.offset[0] * headScale,
@@ -483,20 +502,31 @@ export function growPlant(options: GrowPlantOptions): Plant {
 
     const cosAngle = Math.cos(angle);
     const sinAngle = Math.sin(angle);
+    const cosYaw = Math.cos(yaw);
+    const sinYaw = Math.sin(yaw);
+
+    // Heading in XZ plane
+    const hX = cosAngle * cosYaw - sinAngle * sinYaw;
+    const hZ = sinAngle * cosYaw + cosAngle * sinYaw;
+
+    // Transverse width in XZ plane (binormal)
+    const wX = -cosAngle * sinYaw - sinAngle * cosYaw;
+    const wZ = -sinAngle * sinYaw + cosAngle * cosYaw;
+
     const cosTilt = Math.cos(tilt);
     const sinTilt = Math.sin(tilt);
 
     const tangent: Vec3 = [
-      cleanZero(cosAngle * cosTilt),
+      cleanZero(hX * cosTilt),
       cleanZero(sinTilt),
-      cleanZero(sinAngle * cosTilt),
+      cleanZero(hZ * cosTilt),
     ];
     const normal: Vec3 = [
-      cleanZero(-cosAngle * sinTilt),
+      cleanZero(-hX * sinTilt),
       cleanZero(cosTilt),
-      cleanZero(-sinAngle * sinTilt),
+      cleanZero(-hZ * sinTilt),
     ];
-    const binormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
+    const binormal: Vec3 = [cleanZero(wX), 0, cleanZero(wZ)];
 
     const stagger = petalRng.range(0.0, staggerAmount);
     const birth = stemFinishTime + stagger + p.layer * 0.08;

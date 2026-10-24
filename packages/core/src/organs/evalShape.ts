@@ -81,8 +81,12 @@ export function evalShapePosition(
   const cupFactor = Math.sin(Math.min(1.0, clampedU / 0.72) * Math.PI);
   y -= shape.cupDepth * (1.0 - clampedV * clampedV) * cupFactor;
 
-  // Azimuthal wrap around cylinder
-  z -= 0.3 * (clampedV * clampedV) * (w * w) * (0.2 + shape.cupDepth);
+  // Azimuthal cylindrical wrap
+  // Petal edges wrap around the bud cylinder toward the center (+y in normal frame)
+  const wrapR = 0.35;
+  const phi = clamp(x / wrapR, -1.35, 1.35);
+  x = wrapR * Math.sin(phi);
+  y += wrapR * (1.0 - Math.cos(phi)) * (0.35 + shape.cupDepth * 0.65);
 
   // 3. Margin ruffles
   if (shape.ruffle > 0) {
@@ -95,37 +99,29 @@ export function evalShapePosition(
   if (shape.midribBend > 0.15) {
     // Tulip goblet / arched leaf:
     const belly = Math.sin(clampedU * Math.PI);
-    y -= shape.midribBend * belly * 0.38;
+    y -= shape.midribBend * belly * 0.42;
 
     if (clampedU > 0.52) {
       const inT = (clampedU - 0.52) / 0.48;
-      y += shape.midribBend * 0.36 * inT * inT;
-      z -= shape.midribBend * 0.14 * inT;
+      y += shape.midribBend * 0.4 * inT * inT;
+      z -= shape.midribBend * 0.12 * inT;
     }
 
-    const keel = (1.0 - Math.abs(clampedV)) * 0.12 * Math.sin(clampedU * Math.PI);
+    const keel = (1.0 - Math.abs(clampedV)) * 0.08 * Math.sin(clampedU * Math.PI);
     y -= keel;
   } else if (shape.reflex > 0.05) {
-    // Rose petal revolute wings and recurved apex:
-    if (clampedU > 0.35) {
-      const archT = (clampedU - 0.35) / 0.65;
-      const archAngle = shape.reflex * archT * archT * 2.2;
-      y -= Math.sin(archAngle) * 0.45 * archT;
-      z -= (1.0 - Math.cos(archAngle)) * 0.32 * archT;
+    // Rose petal revolute wings:
+    if (clampedU > 0.38) {
+      const archT = (clampedU - 0.38) / 0.62;
+      const archAngle = shape.reflex * archT * archT * 1.8;
+      y -= Math.sin(archAngle) * 0.42 * archT;
+      z -= (1.0 - Math.cos(archAngle)) * 0.28 * archT;
 
       // Revolute wing roll:
-      const wingT = Math.max(0, Math.min(1, (Math.abs(clampedV) - 0.38) / 0.62));
-      const rollAngle = wingT * 1.8 * shape.reflex * archT;
-      y -= Math.sin(rollAngle) * 0.26 * wingT * archT;
-      x *= 1.0 - (1.0 - Math.cos(rollAngle)) * 0.32 * wingT;
-
-      // Recurved apex quill:
-      const apexCenter =
-        (1.0 - Math.min(1.0, Math.abs(clampedV) / 0.38)) *
-        Math.max(0.0, (clampedU - 0.68) / 0.32);
-      const apexCurl = shape.reflex * 0.24 * apexCenter;
-      y -= apexCurl * 1.3;
-      z -= apexCurl * 0.7;
+      const wingT = Math.max(0, Math.min(1, (Math.abs(clampedV) - 0.35) / 0.65));
+      const rollAngle = wingT * 1.6 * shape.reflex * archT;
+      y -= Math.sin(rollAngle) * 0.28 * wingT * archT;
+      x *= 1.0 - (1.0 - Math.cos(rollAngle)) * 0.24 * wingT;
     }
   } else {
     // Daisy / leaf:

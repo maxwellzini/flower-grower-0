@@ -48,6 +48,7 @@ export interface WhorlPetalPlacement {
   tilt: number;
   scale: number;
   offset: Vec3;
+  yaw?: number;
 }
 
 export function whorls(options: WhorlOptions): WhorlPetalPlacement[] {
@@ -151,6 +152,119 @@ export function whorls(options: WhorlOptions): WhorlPetalPlacement[] {
       });
       totalIndex++;
     }
+  }
+
+  return placements;
+}
+
+export interface RoseSpiralOptions {
+  count: number;
+  radius?: number;
+  tilt?: number;
+  baseAngle?: number;
+}
+
+/**
+ * Procedural spiral phyllotaxis arrangement for garden roses.
+ * Petals emerge continuously along a golden angle spiral from a tight central
+ * upright bud core to outer flared, reflexed guard petals, with tangential swirl yaw.
+ */
+export function roseSpiral(options: RoseSpiralOptions): WhorlPetalPlacement[] {
+  const { count, radius = 0.11, tilt = 0.36, baseAngle = 0 } = options;
+
+  const placements: WhorlPetalPlacement[] = [];
+  const goldenAngle = 2.3999632; // ~137.507764 degrees
+  const innerRadius = 0.018;
+  const domeHeight = 0.038;
+
+  for (let i = 0; i < count; i++) {
+    const t = count > 1 ? i / (count - 1) : 0;
+    const angle = baseAngle + i * goldenAngle;
+    const r = innerRadius + (radius - innerRadius) * Math.pow(t, 0.65);
+    const x = r * Math.cos(angle);
+    const z = r * Math.sin(angle);
+    const y = (1.0 - Math.pow(t, 0.85)) * domeHeight;
+
+    const scale = 0.38 + 0.62 * Math.pow(t, 0.7);
+    const petalTilt = 1.45 + (tilt - 1.45) * Math.pow(t, 0.82);
+    const yaw = 0.72 * Math.pow(1.0 - t, 1.25);
+    const layer = Math.min(4, Math.floor(t * 5));
+
+    placements.push({
+      layer,
+      indexInLayer: i,
+      totalIndex: i,
+      angle,
+      tilt: petalTilt,
+      scale,
+      offset: [x, y, z],
+      yaw,
+    });
+  }
+
+  return placements;
+}
+
+export interface TulipWhorlOptions {
+  radius?: number;
+  tilt?: number;
+  baseAngle?: number;
+}
+
+/**
+ * Classical 3+3 trimerous alternating whorl for tulips.
+ * 3 inner tepals form an erect chalice core; 3 outer tepals are shifted by 60 degrees
+ * to clasp directly over the seams between the inner tepals.
+ */
+export function tulipWhorls(options: TulipWhorlOptions = {}): WhorlPetalPlacement[] {
+  const { radius = 0.048, tilt = 1.32, baseAngle = 0 } = options;
+
+  const placements: WhorlPetalPlacement[] = [];
+
+  // Inner whorl: 3 tepals at 0, 120, 240 deg, slightly higher, snugger radius
+  const innerRadius = radius * 0.86;
+  const innerTilt = tilt + 0.05;
+  const innerScale = 0.96;
+  const innerY = 0.012;
+
+  for (let i = 0; i < 3; i++) {
+    const angle = baseAngle + (i * 2 * Math.PI) / 3;
+    const x = innerRadius * Math.cos(angle);
+    const z = innerRadius * Math.sin(angle);
+
+    placements.push({
+      layer: 1,
+      indexInLayer: i,
+      totalIndex: i,
+      angle,
+      tilt: innerTilt,
+      scale: innerScale,
+      offset: [x, innerY, z],
+      yaw: 0.0,
+    });
+  }
+
+  // Outer whorl: 3 tepals shifted by 60 deg, bridging the inner gaps
+  const outerRadius = radius * 1.15;
+  const outerTilt = tilt - 0.04;
+  const outerScale = 1.04;
+  const outerY = 0.0;
+
+  for (let i = 0; i < 3; i++) {
+    const angle = baseAngle + (i * 2 * Math.PI) / 3 + Math.PI / 3;
+    const x = outerRadius * Math.cos(angle);
+    const z = outerRadius * Math.sin(angle);
+
+    placements.push({
+      layer: 0,
+      indexInLayer: i,
+      totalIndex: 3 + i,
+      angle,
+      tilt: outerTilt,
+      scale: outerScale,
+      offset: [x, outerY, z],
+      yaw: 0.0,
+    });
   }
 
   return placements;
@@ -266,3 +380,4 @@ export function leafArrangement(options: LeafArrangementOptions): StemLeafPlacem
 
   return placements;
 }
+

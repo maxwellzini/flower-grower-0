@@ -8,11 +8,12 @@ export type Correlation = (genome: Genome) => Genome;
  * Standard botanical correlations ensuring natural proportions.
  */
 export const defaultCorrelations: Correlation[] = [
-  // 1. More petals -> narrower petals (only scale down when count > 21, never blow up wide petals to max limit)
+  // 1. More petals -> narrower petals (only for flat/single-whorl flowers like daisy; never crush multi-layer spiral flowers like roses)
   (genome: Genome): Genome => {
+    const whorlLayers = Number(genome['flower.whorlLayers'] ?? 1);
     const count = Number(genome['petal.count'] ?? 21);
     const baseWidth = Number(genome['petal.width'] ?? 0.28);
-    if (count > 21) {
+    if (whorlLayers <= 2 && count > 21) {
       const countFactor = Math.sqrt(21 / count);
       const newWidth = clamp(
         baseWidth * countFactor,
