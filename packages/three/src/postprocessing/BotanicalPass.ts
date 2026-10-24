@@ -67,65 +67,64 @@ export class BotanicalPass {
         void main() {
           vec2 texel = uLineWidth / max(vec2(1.0), uResolution);
 
-          // Hand-drawn line wobble
-          vec2 wobbleOffset = vec2(
-            sin(vUv.y * 70.0 + vUv.x * 45.0),
-            cos(vUv.x * 65.0 + vUv.y * 50.0)
-          ) * (texel * 0.45 * uWobble);
-
-          vec2 uv = vUv + wobbleOffset;
-
-          vec4 cCenter = texture2D(tColor, uv);
+          // Always sample crisp, unwarped source color
+          vec4 cCenter = texture2D(tColor, vUv);
 
           float edge = 0.0;
           if (uInkEdges > 0.5) {
-            vec2 d0 = uv + vec2(-texel.x, -texel.y);
-            vec2 d1 = uv + vec2( texel.x, -texel.y);
-            vec2 d2 = uv + vec2(-texel.x,  texel.y);
-            vec2 d3 = uv + vec2( texel.x,  texel.y);
+            // Subtle micro-jitter for edge sampling taps only
+            vec2 wobble = vec2(
+              sin(vUv.y * 60.0 + vUv.x * 40.0),
+              cos(vUv.x * 55.0 + vUv.y * 45.0)
+            ) * (texel * 0.3 * uWobble);
+
+            vec2 d0 = vUv + vec2(-texel.x, -texel.y) + wobble;
+            vec2 d1 = vUv + vec2( texel.x, -texel.y) + wobble;
+            vec2 d2 = vUv + vec2(-texel.x,  texel.y) - wobble;
+            vec2 d3 = vUv + vec2( texel.x,  texel.y) - wobble;
 
             float z0 = readDepth(d0);
             float z1 = readDepth(d1);
             float z2 = readDepth(d2);
             float z3 = readDepth(d3);
-            float zC = readDepth(uv);
+            float zC = readDepth(vUv);
 
             vec3 n0 = texture2D(tNormal, d0).xyz * 2.0 - 1.0;
             vec3 n1 = texture2D(tNormal, d1).xyz * 2.0 - 1.0;
             vec3 n2 = texture2D(tNormal, d2).xyz * 2.0 - 1.0;
             vec3 n3 = texture2D(tNormal, d3).xyz * 2.0 - 1.0;
 
-            // Depth gradient (discontinuities between overlapping petals)
+            // Discontinuities between overlapping petal layers
             float depthGradX = abs(z1 - z2);
             float depthGradY = abs(z3 - z0);
             float depthGrad = (depthGradX + depthGradY) / max(0.001, zC);
-            float depthEdge = smoothstep(0.035, 0.08, depthGrad);
+            float depthEdge = smoothstep(0.08, 0.22, depthGrad);
 
-            // Normal gradient (creases and folds)
+            // Normal gradient (major creases only, avoiding noisy surface curvature)
             float normDiff1 = 1.0 - max(0.0, dot(n0, n3));
             float normDiff2 = 1.0 - max(0.0, dot(n1, n2));
-            float normEdge = smoothstep(0.18, 0.45, max(normDiff1, normDiff2));
+            float normEdge = smoothstep(0.40, 0.80, max(normDiff1, normDiff2));
 
-            // Silhouette alpha edge
+            // Outer silhouette alpha edge
             float a0 = texture2D(tColor, d0).a;
             float a1 = texture2D(tColor, d1).a;
             float a2 = texture2D(tColor, d2).a;
             float a3 = texture2D(tColor, d3).a;
             float aMin = min(min(a0, a1), min(a2, a3));
             float aMax = max(max(a0, a1), max(a2, a3));
-            float alphaEdge = (aMax - aMin) > 0.3 ? 1.0 : 0.0;
+            float alphaEdge = smoothstep(0.15, 0.75, aMax - aMin);
 
-            edge = clamp(depthEdge + normEdge + alphaEdge, 0.0, 1.0);
+            edge = clamp(max(depthEdge * 0.7, max(normEdge * 0.6, alphaEdge)), 0.0, 1.0);
           }
 
-          vec3 inkedColor = mix(cCenter.rgb, uInkColor, edge * 0.92);
-          float outAlpha = max(cCenter.a, edge);
+          vec3 inkedColor = mix(cCenter.rgb, uInkColor, edge * 0.75);
+          float outAlpha = cCenter.a;
 
           if (uPaper > 0.5) {
             // Antique botanical paper texture
-            float grain = (fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.03;
+            float grain = (fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.025;
             vec2 vigCoord = vUv * 2.0 - 1.0;
-            float vig = 1.0 - dot(vigCoord, vigCoord) * 0.08;
+            float vig = 1.0 - dot(vigCoord, vigCoord) * 0.06;
             vec3 paper = (uPaperColor + vec3(grain)) * vig;
             vec3 finalRgb = mix(paper, inkedColor, outAlpha);
             gl_FragColor = vec4(finalRgb, 1.0);

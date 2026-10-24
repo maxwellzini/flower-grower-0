@@ -202,13 +202,13 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         // Base-to-tip organic color gradient
         vec3 color = mix(vColor * 0.88, vColor * 1.08, vUv.x);
 
-        // Procedural botanical venation
+        // Soft procedural botanical venation (subtle, non-intrusive)
         if (uEnableVeins > 0.5) {
           float vAcross = (vUv.y - 0.5) * 2.0;
-          float midrib = exp(-vAcross * vAcross * 350.0) * 0.16 * smoothstep(0.04, 0.25, vUv.x);
-          float branchParam = vUv.x * 12.0 - abs(vAcross) * 5.0;
-          float lateral = exp(-pow(sin(branchParam * 3.14159265), 2.0) * 24.0) * 0.10 *
-                          smoothstep(0.12, 0.75, vUv.x) * smoothstep(0.08, 0.7, abs(vAcross));
+          float midrib = exp(-vAcross * vAcross * 120.0) * 0.05 * smoothstep(0.05, 0.35, vUv.x);
+          float branchParam = vUv.x * 8.0 - abs(vAcross) * 3.5;
+          float lateral = exp(-pow(sin(branchParam * 3.14159265), 2.0) * 12.0) * 0.035 *
+                          smoothstep(0.15, 0.70, vUv.x) * smoothstep(0.1, 0.6, abs(vAcross));
           float veinShade = 1.0 - (midrib + lateral);
           color *= veinShade;
         }

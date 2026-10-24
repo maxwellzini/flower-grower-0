@@ -88,8 +88,8 @@ const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
 shadowMesh.rotation.x = -Math.PI / 2;
 shadowMesh.position.y = -0.01;
 
-// 2. Initialize Garden
-const garden = new Garden({ renderer });
+// 2. Initialize Garden (Clean / Minimal style by default)
+const garden = new Garden({ renderer, style: 'minimal' });
 garden.scene.add(shadowMesh);
 
 // Lighting
@@ -121,38 +121,12 @@ function updateTelemetry(plant: Plant): void {
   scrubber.max = plant.duration.toFixed(3);
 }
 
-let currentCameraPreset: 'front' | 'perspective' | 'top' = 'perspective';
-
-function applyCameraPreset(preset: 'front' | 'perspective' | 'top'): void {
-  currentCameraPreset = preset;
+function frameCamera(): void {
   if (!currentPlant) return;
   const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
-
-  if (preset === 'front') {
-    controls.target.set(0, tipY * 0.55, 0);
-    camera.position.set(0, tipY * 0.55, 4.8);
-  } else if (preset === 'top') {
-    controls.target.set(0, tipY, 0);
-    camera.position.set(0, tipY + 4.2, 0.001);
-  } else {
-    // 3/4 Perspective
-    controls.target.set(0, tipY * 0.6, 0);
-    camera.position.set(1.6, tipY * 0.85 + 0.9, 4.8);
-  }
+  controls.target.set(0, tipY * 0.6, 0);
+  camera.position.set(1.6, tipY * 0.85 + 0.9, 5.0);
   controls.update();
-
-  document.querySelectorAll('[data-camera-preset]').forEach((btn) => {
-    const el = btn as HTMLElement;
-    if (el.dataset.cameraPreset === preset) {
-      el.classList.add('active');
-    } else {
-      el.classList.remove('active');
-    }
-  });
-}
-
-function frameCamera(): void {
-  applyCameraPreset(currentCameraPreset);
 }
 
 function loadPlant(refocus = false, preserveTime = true): void {
@@ -314,19 +288,6 @@ document.querySelectorAll('[data-cs-species]').forEach((btn) => {
   btn.addEventListener('click', (e) => {
     const sp = (e.currentTarget as HTMLElement).dataset.csSpecies;
     if (sp) selectSpecies(sp);
-  });
-});
-
-// Camera View Presets
-document.querySelectorAll('[data-camera-preset]').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    const preset = (e.currentTarget as HTMLElement).dataset.cameraPreset as
-      | 'front'
-      | 'perspective'
-      | 'top';
-    if (preset) {
-      applyCameraPreset(preset);
-    }
   });
 });
 
