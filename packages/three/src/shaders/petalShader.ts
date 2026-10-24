@@ -2,26 +2,30 @@ import * as THREE from 'three';
 
 export function createPetalMaterial(): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
+    glslVersion: THREE.GLSL3,
     uniforms: {
       uTime: { value: 0.0 },
       uLightDir: { value: new THREE.Vector3(0.5, 1.0, 0.8).normalize() },
+      uEnableVeins: { value: 1.0 },
     },
     vertexShader: /* glsl */ `
       uniform float uTime;
 
-      attribute vec3 iOrigin;
-      attribute vec3 iTangent;
-      attribute vec3 iNormal;
-      attribute vec3 iBinormal;
-      attribute vec3 iColor;
-      attribute vec4 iGrowthParams; // birth, grow, openDur, open0
-      attribute vec4 iShapeParams;  // scale, cupDepth, curlTip, tilt
-      attribute vec4 iCurveParams;  // midribBend, reflex, width, baseNarrow
+      in vec3 iOrigin;
+      in vec3 iTangent;
+      in vec3 iNormal;
+      in vec3 iBinormal;
+      in vec3 iColor;
+      in vec4 iGrowthParams; // birth, grow, openDur, open0
+      in vec4 iShapeParams;  // scale, cupDepth, curlTip, tilt
+      in vec4 iCurveParams;  // midribBend, reflex, width, ruffle
 
-      varying vec3 vNormal;
-      varying vec3 vColor;
-      varying vec2 vUv;
-      varying float vGrowth;
+      out vec3 vNormal;
+      out vec3 vViewNormal;
+      out vec3 vColor;
+      out vec2 vUv;
+      out float vGrowth;
+      out vec3 vWorldPos;
 
       void main() {
         vUv = uv;
@@ -48,7 +52,6 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         vGrowth = growProgress;
 
         // Bud unfurling (openness going from iOpen0 down to 0)
-        // Petals start as an upright central bud and unfurl downwards and outwards
         float openProgress = clamp((uTime - (iBirth + iGrow * 0.15)) / max(0.001, iOpenDur), 0.0, 1.0);
         float openness = mix(iOpen0, 0.0, smoothstep(0.0, 1.0, openProgress));
 
@@ -63,51 +66,44 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         float y = 0.0;
 
         // 1. Base concavity / spoon bowl
-        // Deepest at u ~ 0.35, holding the petal's organic volume:
         float cupFactor = sin(clamp(u / 0.72, 0.0, 1.0) * 3.14159265);
         y -= iCupDepth * (1.0 - v * v) * cupFactor;
 
         // Azimuthal cylindrical wrap:
-        // Petal edges wrap around the bud cylinder toward the center (+y in normal frame)
         float wrapR = 0.35;
         float phi = clamp(x / wrapR, -1.35, 1.35);
         x = wrapR * sin(phi);
         y += wrapR * (1.0 - cos(phi)) * (0.35 + iCupDepth * 0.65);
 
-        // Margin ruffles (sinusoidal undulations on petal margins, prominent on peonies & roses)
+        // Margin ruffles (sinusoidal undulations on petal margins)
         if (iRuffle > 0.001) {
           float margin = smoothstep(0.35, 1.0, abs(v));
-          float wave = sin(u * 16.0 + v * 9.0);
+          float wave = sin(u * 18.0 + v * 9.0);
           y += iRuffle * margin * wave * smoothstep(0.3, 1.0, u) * 0.45;
         }
 
         // 2. Species-specific longitudinal & margin curvature:
         if (iMidribBend > 0.15) {
           // --- TULIP TEPAL ---
-          // Deep chalice belly bowing outward:
           float belly = sin(u * 3.14159265);
           y -= iMidribBend * belly * 0.42;
 
-          // Upper rim curves gently inward to clasp the goblet top:
           if (u > 0.52) {
             float inT = (u - 0.52) / 0.48;
             y += iMidribBend * 0.40 * inT * inT;
             z -= iMidribBend * 0.12 * inT;
           }
 
-          // Tulip longitudinal keel:
           float keel = (1.0 - abs(v)) * 0.08 * sin(u * 3.14159265);
           y -= keel;
         } else if (iReflex > 0.05) {
-          // --- ROSE PETAL (True botanical recurve & revolute margin) ---
+          // --- ROSE / PEONY PETAL ---
           if (u > 0.38) {
             float archT = (u - 0.38) / 0.62;
             float archAngle = iReflex * archT * archT * 1.8;
             y -= sin(archAngle) * 0.42 * archT;
             z -= (1.0 - cos(archAngle)) * 0.28 * archT;
 
-            // Revolute lateral wing roll:
-            // Outer shoulders roll backward around the perimeter
             float wingT = smoothstep(0.35, 1.0, abs(v));
             float rollAngle = wingT * 1.6 * iReflex * archT;
             y -= sin(rollAngle) * 0.28 * wingT * archT;
@@ -118,7 +114,6 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
           float midArc = sin(u * 3.14159265);
           y -= iMidribBend * midArc * 0.2;
 
-          // Gentle central furrow:
           float furrow = -abs(v) * (1.0 - abs(v)) * 0.14 * midArc;
           y += furrow;
 
@@ -131,28 +126,25 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         }
 
         // 3. Central bud formation & downward unfurling
-        // In the bud (openness = 1.0), petals stand upright at ~85 deg (1.48 rad) in a tight central bud.
-        // As openness -> 0, petals rotate DOWNWARD and OUTWARD to their mature tilt.
-        float budTilt = 1.48; // ~85 degrees upright
+        float budTilt = 1.48;
         float dTheta = (budTilt - iTilt) * openness;
         float cosBeta = cos(dTheta);
         float sinBeta = sin(dTheta);
 
-        // In the bud phase, petals also tuck in their width and wrap tighter around the bud dome
         if (openness > 0.0) {
           x *= (1.0 - 0.35 * openness);
           y -= 0.22 * openness * (1.0 - v * v) * u;
           z -= 0.06 * openness * u * u;
         }
 
-        // Exact rotation around circumferential hinge axis (iBinormal)
         float rotZ = z * cosBeta - y * sinBeta;
         float rotY = z * sinBeta + y * cosBeta;
         float rotX = x;
 
         vec3 worldPos = iOrigin + (iBinormal * rotX + iNormal * rotY + iTangent * rotZ) * sizeScale;
+        vWorldPos = worldPos;
 
-        // Normal computation taking into account lateral cup, longitudinal slope, and wing roll
+        // Normal computation
         float slopeX = 2.0 * v * iCupDepth;
         float slopeZ = 0.0;
         if (iMidribBend > 0.15) {
@@ -166,25 +158,32 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         }
         vec3 localNorm = normalize(vec3(slopeX, 1.0, -slopeZ));
 
-        // Rotate normal around hinge axis
         vec3 rotNorm = vec3(
           localNorm.x,
           localNorm.z * sinBeta + localNorm.y * cosBeta,
           localNorm.z * cosBeta - localNorm.y * sinBeta
         );
 
-        vNormal = normalize(iBinormal * rotNorm.x + iNormal * rotNorm.y + iTangent * rotNorm.z);
+        vec3 worldNormal = normalize(iBinormal * rotNorm.x + iNormal * rotNorm.y + iTangent * rotNorm.z);
+        vNormal = worldNormal;
+        vViewNormal = normalize(mat3(viewMatrix) * worldNormal);
 
         gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
       }
     `,
     fragmentShader: /* glsl */ `
       uniform vec3 uLightDir;
+      uniform float uEnableVeins;
 
-      varying vec3 vNormal;
-      varying vec3 vColor;
-      varying vec2 vUv;
-      varying float vGrowth;
+      in vec3 vNormal;
+      in vec3 vViewNormal;
+      in vec3 vColor;
+      in vec2 vUv;
+      in float vGrowth;
+      in vec3 vWorldPos;
+
+      layout(location = 0) out vec4 outColor;
+      layout(location = 1) out vec4 outNormal;
 
       void main() {
         if (vGrowth <= 0.001) {
@@ -197,13 +196,32 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         }
         vec3 L = normalize(uLightDir);
 
-        // Soft botanical wrap diffuse
+        // Soft botanical wrap diffuse (half-Lambert)
         float diff = dot(N, L) * 0.5 + 0.5;
-        // Subtle center to tip gradient
-        vec3 color = mix(vColor * 0.90, vColor * 1.08, vUv.x);
-        vec3 finalColor = color * (0.35 + 0.65 * diff);
 
-        gl_FragColor = vec4(finalColor, 1.0);
+        // Base-to-tip organic color gradient
+        vec3 color = mix(vColor * 0.88, vColor * 1.08, vUv.x);
+
+        // Procedural botanical venation
+        if (uEnableVeins > 0.5) {
+          float vAcross = (vUv.y - 0.5) * 2.0;
+          float midrib = exp(-vAcross * vAcross * 350.0) * 0.16 * smoothstep(0.04, 0.25, vUv.x);
+          float branchParam = vUv.x * 12.0 - abs(vAcross) * 5.0;
+          float lateral = exp(-pow(sin(branchParam * 3.14159265), 2.0) * 24.0) * 0.10 *
+                          smoothstep(0.12, 0.75, vUv.x) * smoothstep(0.08, 0.7, abs(vAcross));
+          float veinShade = 1.0 - (midrib + lateral);
+          color *= veinShade;
+        }
+
+        // Faint warm rim lighting on silhouettes
+        vec3 V = normalize(-vWorldPos);
+        float rim = pow(1.0 - max(0.0, dot(N, V)), 2.8) * 0.20;
+        vec3 warmRim = vec3(1.0, 0.94, 0.85) * rim;
+
+        vec3 finalColor = color * (0.35 + 0.65 * diff) + warmRim * color;
+
+        outColor = vec4(finalColor, 1.0);
+        outNormal = vec4(normalize(vViewNormal) * 0.5 + 0.5, 1.0);
       }
     `,
     side: THREE.DoubleSide,

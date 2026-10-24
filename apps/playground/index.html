@@ -309,6 +309,70 @@
         gap: 8px;
       }
 
+      /* Style & Camera Pills */
+      .button-group {
+        display: flex;
+        gap: 6px;
+        width: 100%;
+      }
+
+      .button-group-item {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        font-family: inherit;
+        font-size: 11.5px;
+        font-weight: 500;
+        padding: 6px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .button-group-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+      }
+
+      .button-group-item.active {
+        background: rgba(16, 185, 129, 0.25);
+        border-color: #10b981;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .toggle-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .toggle-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11.5px;
+        color: var(--text-muted);
+        cursor: pointer;
+      }
+
+      .toggle-item:hover {
+        color: var(--text-main);
+      }
+
+      .toggle-item input[type="checkbox"] {
+        accent-color: #10b981;
+        cursor: pointer;
+        width: 14px;
+        height: 14px;
+      }
+
       /* Collapsible Gene Sliders */
       .gene-group {
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -637,7 +701,7 @@
         <div class="logo-badge">🌸</div>
         <div class="header-text">
           <h1>Flower Grower</h1>
-          <p>Phase 4 • Genome & Species v1</p>
+          <p>Phase 5 • Botanical Style & Shaders</p>
         </div>
       </div>
 
@@ -658,6 +722,37 @@
         <button class="species-pill" data-species="peony">🌸 Peony</button>
         <button class="species-pill" data-species="ranunculus">🏵️ Ranunculus</button>
         <button class="species-pill" data-species="tulip">🌷 Tulip</button>
+      </div>
+
+      <div class="panel-section-title">Camera Angles (Phase 5)</div>
+      <div class="button-group">
+        <button class="button-group-item" data-camera-preset="front">📐 Front</button>
+        <button class="button-group-item active" data-camera-preset="perspective">🧊 3/4 View</button>
+        <button class="button-group-item" data-camera-preset="top">🎯 Top-Down</button>
+      </div>
+
+      <div class="panel-section-title">Illustration Style</div>
+      <div class="button-group" style="margin-bottom: 4px;">
+        <button class="button-group-item active" data-style-preset="botanical">🖋️ Botanical</button>
+        <button class="button-group-item" data-style-preset="minimal">🫧 Clean</button>
+      </div>
+      <div class="toggle-list">
+        <label class="toggle-item">
+          <span>Sepia Ink Edges (Sobel/Cross)</span>
+          <input type="checkbox" id="toggle-ink" checked />
+        </label>
+        <label class="toggle-item">
+          <span>Hand-Drawn Line Wobble</span>
+          <input type="checkbox" id="toggle-wobble" checked />
+        </label>
+        <label class="toggle-item">
+          <span>Procedural Petal Venation</span>
+          <input type="checkbox" id="toggle-veins" checked />
+        </label>
+        <label class="toggle-item">
+          <span>Antique Paper Background</span>
+          <input type="checkbox" id="toggle-paper" />
+        </label>
       </div>
 
       <div class="panel-section-title">Seed Control</div>

@@ -121,12 +121,38 @@ function updateTelemetry(plant: Plant): void {
   scrubber.max = plant.duration.toFixed(3);
 }
 
-function frameCamera(): void {
+let currentCameraPreset: 'front' | 'perspective' | 'top' = 'perspective';
+
+function applyCameraPreset(preset: 'front' | 'perspective' | 'top'): void {
+  currentCameraPreset = preset;
   if (!currentPlant) return;
   const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
-  controls.target.set(0, tipY * 0.6, 0);
-  camera.position.set(1.6, tipY * 0.85 + 0.9, 5.0);
+
+  if (preset === 'front') {
+    controls.target.set(0, tipY * 0.55, 0);
+    camera.position.set(0, tipY * 0.55, 4.8);
+  } else if (preset === 'top') {
+    controls.target.set(0, tipY, 0);
+    camera.position.set(0, tipY + 4.2, 0.001);
+  } else {
+    // 3/4 Perspective
+    controls.target.set(0, tipY * 0.6, 0);
+    camera.position.set(1.6, tipY * 0.85 + 0.9, 4.8);
+  }
   controls.update();
+
+  document.querySelectorAll('[data-camera-preset]').forEach((btn) => {
+    const el = btn as HTMLElement;
+    if (el.dataset.cameraPreset === preset) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+}
+
+function frameCamera(): void {
+  applyCameraPreset(currentCameraPreset);
 }
 
 function loadPlant(refocus = false, preserveTime = true): void {
@@ -288,6 +314,75 @@ document.querySelectorAll('[data-cs-species]').forEach((btn) => {
   btn.addEventListener('click', (e) => {
     const sp = (e.currentTarget as HTMLElement).dataset.csSpecies;
     if (sp) selectSpecies(sp);
+  });
+});
+
+// Camera View Presets
+document.querySelectorAll('[data-camera-preset]').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    const preset = (e.currentTarget as HTMLElement).dataset.cameraPreset as
+      | 'front'
+      | 'perspective'
+      | 'top';
+    if (preset) {
+      applyCameraPreset(preset);
+    }
+  });
+});
+
+// Illustration Style Controls
+const toggleInk = document.getElementById('toggle-ink') as HTMLInputElement | null;
+const toggleWobble = document.getElementById('toggle-wobble') as HTMLInputElement | null;
+const toggleVeins = document.getElementById('toggle-veins') as HTMLInputElement | null;
+const togglePaper = document.getElementById('toggle-paper') as HTMLInputElement | null;
+
+function syncStyle(): void {
+  garden.setStyle({
+    name: 'botanical',
+    inkEdges: toggleInk?.checked ?? true,
+    wobble: toggleWobble?.checked ? 1.0 : 0.0,
+    veins: toggleVeins?.checked ?? true,
+    paper: togglePaper?.checked ?? false,
+  });
+}
+
+function updateStylePresetButtons(name: string): void {
+  document.querySelectorAll('[data-style-preset]').forEach((btn) => {
+    const el = btn as HTMLElement;
+    if (el.dataset.stylePreset === name) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+}
+
+[toggleInk, toggleWobble, toggleVeins, togglePaper].forEach((el) => {
+  el?.addEventListener('change', () => {
+    syncStyle();
+    const isBotanical = (toggleInk?.checked ?? false) || (toggleVeins?.checked ?? false);
+    updateStylePresetButtons(isBotanical ? 'botanical' : 'minimal');
+  });
+});
+
+document.querySelectorAll('[data-style-preset]').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    const preset = (e.currentTarget as HTMLElement).dataset.stylePreset;
+    if (preset === 'botanical') {
+      if (toggleInk) toggleInk.checked = true;
+      if (toggleWobble) toggleWobble.checked = true;
+      if (toggleVeins) toggleVeins.checked = true;
+      if (togglePaper) togglePaper.checked = false;
+      syncStyle();
+      updateStylePresetButtons('botanical');
+    } else if (preset === 'minimal') {
+      if (toggleInk) toggleInk.checked = false;
+      if (toggleWobble) toggleWobble.checked = false;
+      if (toggleVeins) toggleVeins.checked = false;
+      if (togglePaper) togglePaper.checked = false;
+      garden.setStyle('minimal');
+      updateStylePresetButtons('minimal');
+    }
   });
 });
 

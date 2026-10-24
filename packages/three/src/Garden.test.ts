@@ -55,4 +55,35 @@ describe('Three.js Garden and Geometry Builders', () => {
 
     garden.dispose();
   });
+
+  it('manages botanical and custom illustration styles', () => {
+    const garden = new Garden();
+    expect(garden.getStyle().name).toBe('botanical');
+    expect(garden.getStyle().inkEdges).toBe(true);
+
+    const daisy = growDaisy({ seed: 1 });
+    const handle = garden.add(daisy);
+
+    // Switch to minimal style
+    garden.setStyle('minimal');
+    expect(garden.getStyle().name).toBe('minimal');
+    expect(garden.getStyle().inkEdges).toBe(false);
+    expect(garden.getStyle().veins).toBe(false);
+
+    // Switch to custom botanical options
+    garden.setStyle({
+      name: 'botanical',
+      paper: true,
+      wobble: 0.5,
+      lineWidth: 1.5,
+      veins: true,
+    });
+    expect(garden.getStyle().paper).toBe(true);
+    expect(garden.getStyle().wobble).toBe(0.5);
+    expect(garden.getStyle().lineWidth).toBe(1.5);
+    expect(garden.getStyle().veins).toBe(true);
+
+    garden.remove(handle);
+    garden.dispose();
+  });
 });

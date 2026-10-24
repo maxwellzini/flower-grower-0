@@ -4,6 +4,12 @@ import { createStemMaterial } from './shaders/stemShader.js';
 import { createPetalMaterial } from './shaders/petalShader.js';
 import { buildStemBufferGeometry } from './geometry/stemGeometry.js';
 import { buildInstancedPetalGeometry } from './geometry/petalGeometry.js';
+import { BotanicalPass } from './postprocessing/BotanicalPass.js';
+import {
+  DEFAULT_BOTANICAL_STYLE,
+  type StyleName,
+  type StyleOptions,
+} from './styles/types.js';
 
 export interface PlantHandle {
   id: number;
@@ -18,6 +24,7 @@ export interface GardenOptions {
   renderer?: THREE.WebGLRenderer;
   canvas?: HTMLCanvasElement;
   transparent?: boolean;
+  style?: StyleName | StyleOptions;
 }
 
 export class Garden {
@@ -27,9 +34,15 @@ export class Garden {
   private nextHandleId = 1;
   private currentTime = 0;
   private materials: THREE.ShaderMaterial[] = [];
+  private style: StyleOptions = { ...DEFAULT_BOTANICAL_STYLE };
+  private botanicalPass = new BotanicalPass();
 
   constructor(options: GardenOptions = {}) {
     this.scene = new THREE.Scene();
+
+    if (options.style) {
+      this.setStyle(options.style);
+    }
 
     if (options.renderer) {
       this.renderer = options.renderer;
@@ -41,6 +54,36 @@ export class Garden {
       });
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     }
+  }
+
+  setStyle(style: StyleName | StyleOptions): void {
+    if (typeof style === 'string') {
+      if (style === 'botanical') {
+        this.style = { ...DEFAULT_BOTANICAL_STYLE };
+      } else if (style === 'minimal') {
+        this.style = {
+          name: 'minimal',
+          inkEdges: false,
+          paper: false,
+          veins: false,
+        };
+      } else {
+        this.style = { ...DEFAULT_BOTANICAL_STYLE, name: style };
+      }
+    } else {
+      this.style = { ...DEFAULT_BOTANICAL_STYLE, ...style };
+    }
+
+    // Update material uniforms for veins
+    for (const mat of this.materials) {
+      if (mat.uniforms.uEnableVeins) {
+        mat.uniforms.uEnableVeins.value = this.style.veins !== false ? 1.0 : 0.0;
+      }
+    }
+  }
+
+  getStyle(): StyleOptions {
+    return { ...this.style };
   }
 
   add(plant: Plant, opts: { startTime?: number } = {}): PlantHandle {
@@ -73,6 +116,9 @@ export class Garden {
 
       const petalGeom = buildInstancedPetalGeometry(organs, shape);
       const petalMat = createPetalMaterial();
+      if (petalMat.uniforms.uEnableVeins) {
+        petalMat.uniforms.uEnableVeins.value = this.style.veins !== false ? 1.0 : 0.0;
+      }
       this.materials.push(petalMat);
       const petalMesh = new THREE.Mesh(petalGeom, petalMat);
       petalMesh.frustumCulled = false;
@@ -106,10 +152,13 @@ export class Garden {
       handle.group.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.geometry.dispose();
-          if (Array.isArray(child.material)) {
-            child.material.forEach((m) => m.dispose());
-          } else {
-            child.material.dispose();
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          for (const m of mats) {
+            m.dispose();
+            const matIdx = this.materials.indexOf(m as THREE.ShaderMaterial);
+            if (matIdx !== -1) {
+              this.materials.splice(matIdx, 1);
+            }
           }
         }
       });
@@ -134,7 +183,11 @@ export class Garden {
   }
 
   render(camera: THREE.Camera): void {
-    if (this.renderer) {
+    if (!this.renderer) return;
+
+    if (this.style.inkEdges || this.style.paper) {
+      this.botanicalPass.render(this.renderer, this.scene, camera, this.style);
+    } else {
       this.renderer.render(this.scene, camera);
     }
   }
@@ -147,6 +200,7 @@ export class Garden {
       mat.dispose();
     }
     this.materials = [];
+    this.botanicalPass.dispose();
     if (this.renderer) {
       this.renderer.dispose();
     }

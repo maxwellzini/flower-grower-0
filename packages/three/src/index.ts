@@ -1,4 +1,6 @@
 export * from './Garden.js';
+export * from './styles/types.js';
+export * from './postprocessing/BotanicalPass.js';
 export * from './shaders/stemShader.js';
 export * from './shaders/petalShader.js';
 export * from './geometry/stemGeometry.js';
