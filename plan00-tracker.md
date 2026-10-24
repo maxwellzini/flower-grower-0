@@ -16,7 +16,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | 2 | Core math | Done | No | 2026-10-23 | 2026-10-23 | 920370e | |
 | 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
 | 4 | Genome and species v1 | Done | Yes (contact sheet) | 2026-10-23 | 2026-10-23 | b1e6dd6, f408a18 | |
-| 5 | Botanical style | Awaiting review | Yes (look) | 2026-10-24 | | | |
+| 5 | Botanical style | Awaiting review | Yes (look) | 2026-10-24 | | 2509aef | |
 | 6 | Vines and the trellis | Not started | No | | | | |
 | 7 | Garden scale | Not started | No | | | | |
 | 8 | Overlay and DOM guides | Not started | No | | | | |
