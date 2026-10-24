@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Organ, OrganShape } from '@flower-grower/core';
-import { oklchToRgb, sampleWidthProfile } from '@flower-grower/core';
+import { evalApexCap, oklchToRgb, sampleWidthProfile } from '@flower-grower/core';
 
 export function buildPetalBaseGrid(
   shape: OrganShape,
@@ -17,7 +17,9 @@ export function buildPetalBaseGrid(
 
     for (let j = 0; j <= vSegments; j++) {
       const v = (j / vSegments) * 2 - 1; // -1..1
-      positions.push(v, w, u);
+      const cap = evalApexCap(shape.tip, v, shape.tipSharpness);
+      const z = u * cap;
+      positions.push(v, w, z);
       uvs.push(u, (v + 1) * 0.5);
     }
   }

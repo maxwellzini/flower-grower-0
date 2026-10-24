@@ -99,11 +99,11 @@ export function growPlant(options: GrowPlantOptions): Plant {
   // Shapes registry
   const basePetalShape: OrganShape = options.species.petalShapes[0] ?? {
     length: 1,
-    widthProfile: [0.2, 0.5, 0.8, 1.0, 0.9, 0.6, 0.2, 0.0],
+    widthProfile: [0.15, 0.28, 0.5, 0.72, 0.88, 0.98, 1.0, 0.96, 0.88, 0.76],
     tip: (genome['petal.tip'] as OrganTip | undefined) ?? 'round',
-    tipSharpness: Number(genome['petal.tipSharpness'] ?? 0.3),
-    baseNarrow: Number(genome['petal.baseNarrow'] ?? 0.2),
-    cupDepth: Number(genome['petal.cupDepth'] ?? 0.08),
+    tipSharpness: Number(genome['petal.tipSharpness'] ?? 0.15),
+    baseNarrow: Number(genome['petal.baseNarrow'] ?? 0.3),
+    cupDepth: Number(genome['petal.cupDepth'] ?? 0.12),
     curlTip: Number(genome['petal.curlTip'] ?? 0.15),
     reflex: Number(genome['petal.reflex'] ?? 0.05),
     ruffle: Number(genome['petal.ruffle'] ?? 0.02),

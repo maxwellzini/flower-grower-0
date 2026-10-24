@@ -51,15 +51,15 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         float openProgress = clamp((uTime - (iBirth + iGrow * 0.15)) / max(0.001, iOpenDur), 0.0, 1.0);
         float openness = mix(iOpen0, 0.0, smoothstep(0.0, 1.0, openProgress));
 
-        // Base grid: u runs 0..1 along length (base to tip), v runs -1..1 across width
-        float u = position.z;
+        // Base grid: u runs 0..1 along length (from uv.x), v runs -1..1 across width
+        float u = uv.x;
         float v = position.x;
         float w = position.y; // base width profile
+        float z = position.z; // smooth rounded apex cap coordinate
 
         // Cross-sectional width scaled by the botanical petal.width gene
         float x = v * w * (iWidthScale * 0.5);
         float y = 0.0;
-        float z = u;
 
         // 1. Base concavity / spoon bowl
         // Deepest at u ~ 0.35, holding the petal's organic volume:

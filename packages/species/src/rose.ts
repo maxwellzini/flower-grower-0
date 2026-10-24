@@ -3,14 +3,14 @@ import { ROSE_LEAF_SHAPE } from '@flower-grower/core';
 
 export const ROSE_PETAL_SHAPE: OrganShape = {
   length: 1,
-  widthProfile: [0.12, 0.32, 0.62, 0.86, 0.98, 1.0, 0.98, 0.92, 0.8, 0.45, 0.0],
+  widthProfile: [0.18, 0.38, 0.62, 0.82, 0.95, 1.0, 1.0, 0.98, 0.94, 0.88],
   tip: 'notch', // authentic apical cleft/notch flanked by rounded lobes
-  tipSharpness: 0.16,
-  baseNarrow: 0.38,
-  cupDepth: 0.42,
-  curlTip: 0.38,
-  reflex: 0.48,
-  ruffle: 0.045,
+  tipSharpness: 0.15,
+  baseNarrow: 0.35,
+  cupDepth: 0.38,
+  curlTip: 0.25,
+  reflex: 0.45,
+  ruffle: 0.035,
   ruffleFreq: 3.5,
   midribBend: 0.04,
   veinCount: 5,

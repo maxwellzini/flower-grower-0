@@ -14,9 +14,9 @@ import { cleanZero, crossVec3, normalizeVec3 } from './math.js';
 
 export const DAISY_PETAL_SHAPE: OrganShape = {
   length: 1,
-  widthProfile: [0.12, 0.22, 0.42, 0.65, 0.82, 0.95, 1.0, 0.98, 0.88, 0.45, 0.0],
-  tip: 'notch',
-  tipSharpness: 0.25,
+  widthProfile: [0.15, 0.28, 0.5, 0.72, 0.88, 0.98, 1.0, 0.96, 0.88, 0.76],
+  tip: 'round',
+  tipSharpness: 0.15,
   baseNarrow: 0.35,
   cupDepth: 0.12,
   curlTip: 0.16,

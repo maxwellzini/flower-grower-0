@@ -24,6 +24,30 @@ export function sampleWidthProfile(profile: readonly number[], u: number): numbe
 }
 
 /**
+ * Evaluates the apex cap contour function Z_cap(v) for a given tip style and width v in [-1, 1].
+ */
+export function evalApexCap(
+  tip: 'round' | 'point' | 'notch' | 'fringe',
+  v: number,
+  sharpness = 0.2,
+): number {
+  const v2 = v * v;
+  if (tip === 'notch') {
+    // Heart-shaped apical cleft flanked by two soft rounded lobes
+    return 1.0 - 0.18 * v2 - 0.06 * Math.exp(-7.0 * v2);
+  }
+  if (tip === 'point') {
+    return 1.0 - (0.2 + 0.3 * sharpness) * Math.pow(Math.abs(v), 1.6);
+  }
+  if (tip === 'fringe') {
+    const wobble = 0.04 * Math.sin(v * 24.0);
+    return 1.0 - 0.2 * v2 + wobble;
+  }
+  // 'round' (smooth elliptic dome cap spanning across the entire top margin)
+  return 1.0 - 0.22 * v2;
+}
+
+/**
  * Evaluates the 3D position of a point on the organ surface in local frame.
  * u in [0, 1] along length (Z axis)
  * v in [-1, 1] across width (X axis)
@@ -47,26 +71,11 @@ export function evalShapePosition(
     w *= 1.0 - shape.baseNarrow * (1.0 - baseFactor);
   }
 
-  // Tip modulation based on tip style
-  if (clampedU > 0.8) {
-    const tipT = (clampedU - 0.8) / 0.2; // 0..1 at tip
-    if (shape.tip === 'point') {
-      w *= Math.pow(1.0 - tipT, 0.5 + shape.tipSharpness);
-    } else if (shape.tip === 'round') {
-      w *= Math.sqrt(Math.max(0, 1.0 - tipT * tipT));
-    } else if (shape.tip === 'notch') {
-      const centerCut = 1.0 - Math.exp(-Math.abs(clampedV) * 4.0) * tipT;
-      w *= Math.sqrt(Math.max(0, 1.0 - tipT * tipT)) * centerCut;
-    } else if (shape.tip === 'fringe') {
-      const fringeWobble = 0.8 + 0.2 * Math.sin(clampedV * 24.0);
-      w *= Math.sqrt(Math.max(0, 1.0 - tipT)) * fringeWobble;
-    }
-  }
-
-  // Width position
+  // Smooth apex contour
+  const cap = evalApexCap(shape.tip, clampedV, shape.tipSharpness);
   let x = clampedV * w * 0.5;
-  let z = clampedU * shape.length;
-  let y = 0;
+  let z = clampedU * shape.length * cap;
+  let y = 0.0;
 
   // 2. Base concavity / spoon bowl
   const cupFactor = Math.sin(Math.min(1.0, clampedU / 0.72) * Math.PI);
