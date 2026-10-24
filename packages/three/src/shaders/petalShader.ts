@@ -40,6 +40,7 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         float iMidribBend = iCurveParams.x;
         float iReflex = iCurveParams.y;
         float iWidthScale = iCurveParams.z > 0.01 ? iCurveParams.z : 0.5;
+        float iRuffle = iCurveParams.w;
 
         // Growth scale (0 until born, smoothstep to 1)
         float growProgress = clamp((uTime - iBirth) / max(0.001, iGrow), 0.0, 1.0);
@@ -72,6 +73,13 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         float phi = clamp(x / wrapR, -1.35, 1.35);
         x = wrapR * sin(phi);
         y += wrapR * (1.0 - cos(phi)) * (0.35 + iCupDepth * 0.65);
+
+        // Margin ruffles (sinusoidal undulations on petal margins, prominent on peonies & roses)
+        if (iRuffle > 0.001) {
+          float margin = smoothstep(0.35, 1.0, abs(v));
+          float wave = sin(u * 16.0 + v * 9.0);
+          y += iRuffle * margin * wave * smoothstep(0.3, 1.0, u) * 0.45;
+        }
 
         // 2. Species-specific longitudinal & margin curvature:
         if (iMidribBend > 0.15) {

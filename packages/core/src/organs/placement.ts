@@ -205,6 +205,56 @@ export function roseSpiral(options: RoseSpiralOptions): WhorlPetalPlacement[] {
   return placements;
 }
 
+export interface RanunculusSpiralOptions {
+  count: number;
+  radius?: number;
+  tilt?: number;
+  baseAngle?: number;
+}
+
+/**
+ * Procedural spiral phyllotaxis arrangement for Ranunculus (Persian Buttercups).
+ * Produces a distinctive globular, incurved multi-layered blossom where 80-120
+ * thin cupped petals pack tightly into an incurved sphere around a button center.
+ */
+export function ranunculusSpiral(
+  options: RanunculusSpiralOptions,
+): WhorlPetalPlacement[] {
+  const { count, radius = 0.095, tilt = 1.12, baseAngle = 0 } = options;
+
+  const placements: WhorlPetalPlacement[] = [];
+  const goldenAngle = 2.3999632; // ~137.507764 degrees
+  const innerRadius = 0.012;
+  const domeHeight = 0.032;
+
+  for (let i = 0; i < count; i++) {
+    const t = count > 1 ? i / (count - 1) : 0;
+    const angle = baseAngle + i * goldenAngle;
+    const r = innerRadius + (radius - innerRadius) * Math.pow(t, 0.58);
+    const x = r * Math.cos(angle);
+    const z = r * Math.sin(angle);
+    const y = (1.0 - Math.pow(t, 0.8)) * domeHeight;
+
+    const scale = 0.28 + 0.72 * Math.pow(t, 0.65);
+    const petalTilt = 1.45 + (tilt - 1.45) * Math.pow(t, 0.75);
+    const yaw = 0.55 * Math.pow(1.0 - t, 1.4);
+    const layer = Math.min(5, Math.floor(t * 6));
+
+    placements.push({
+      layer,
+      indexInLayer: i,
+      totalIndex: i,
+      angle,
+      tilt: petalTilt,
+      scale,
+      offset: [x, y, z],
+      yaw,
+    });
+  }
+
+  return placements;
+}
+
 export interface TulipWhorlOptions {
   radius?: number;
   tilt?: number;

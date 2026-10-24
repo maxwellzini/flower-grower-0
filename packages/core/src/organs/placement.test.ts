@@ -1,7 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { roseSpiral, tulipWhorls, whorls } from './placement.js';
+import { ranunculusSpiral, roseSpiral, tulipWhorls, whorls } from './placement.js';
 
 describe('Petal Placements', () => {
+  it('ranunculusSpiral generates dense incurved spherical phyllotaxis', () => {
+    const count = 90;
+    const placements = ranunculusSpiral({ count, radius: 0.095, tilt: 1.15 });
+
+    expect(placements.length).toBe(count);
+
+    // Inner petal (index 0)
+    const inner = placements[0]!;
+    expect(inner.tilt).toBeGreaterThan(1.35); // tight vertical core
+    expect(inner.scale).toBeLessThan(0.4);
+
+    // Outer petal (index count - 1)
+    const outer = placements[count - 1]!;
+    // Incurved shell: outer petals maintain an erect cupped tilt (~65 deg) rather than reflexing
+    expect(outer.tilt).toBeGreaterThan(1.0);
+    expect(outer.scale).toBeGreaterThan(0.9);
+  });
+
   it('roseSpiral generates golden spiral phyllotaxis with tangential yaw', () => {
     const count = 42;
     const placements = roseSpiral({ count, radius: 0.1, tilt: 0.35 });

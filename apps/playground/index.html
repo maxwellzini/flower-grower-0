@@ -193,23 +193,26 @@
 
       .species-pills {
         display: flex;
+        flex-wrap: wrap;
         gap: 6px;
         width: 100%;
       }
 
       .species-pill {
-        flex: 1;
+        flex: 1 1 calc(33.333% - 6px);
+        min-width: 68px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--panel-border);
         border-radius: var(--radius-sm);
         color: var(--text-muted);
         font-family: inherit;
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 500;
-        padding: 6px 0;
+        padding: 6px 4px;
         text-align: center;
         cursor: pointer;
         transition: all 0.15s ease;
+        white-space: nowrap;
       }
 
       .species-pill:hover {
@@ -652,6 +655,8 @@
       <div class="species-pills">
         <button class="species-pill active" data-species="daisy">🌼 Daisy</button>
         <button class="species-pill" data-species="rose">🌹 Rose</button>
+        <button class="species-pill" data-species="peony">🌸 Peony</button>
+        <button class="species-pill" data-species="ranunculus">🏵️ Ranunculus</button>
         <button class="species-pill" data-species="tulip">🌷 Tulip</button>
       </div>
 
@@ -769,9 +774,11 @@
             morphology. Click any specimen to inspect and scrub in 3D.
           </p>
         </div>
-        <div class="species-pills" style="width: 260px">
+        <div class="species-pills" style="width: 360px">
           <button class="species-pill active" data-cs-species="daisy">🌼 Daisy</button>
           <button class="species-pill" data-cs-species="rose">🌹 Rose</button>
+          <button class="species-pill" data-cs-species="peony">🌸 Peony</button>
+          <button class="species-pill" data-cs-species="ranunculus">🏵️ Ranunculus</button>
           <button class="species-pill" data-cs-species="tulip">🌷 Tulip</button>
         </div>
       </div>

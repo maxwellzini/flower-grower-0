@@ -18,6 +18,7 @@ import {
   leafArrangement,
   type LeafArrangementType,
   phyllotaxis,
+  ranunculusSpiral,
   roseSpiral,
   tulipWhorls,
   whorls,
@@ -305,7 +306,11 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const petalGrowDur = Number(genome['growth.petalGrowDur'] ?? 1.1);
   const petalOpenDur = Number(genome['growth.petalOpenDur'] ?? 1.5);
 
-  if (options.species.id === 'rose') {
+  if (
+    options.species.id === 'rose' ||
+    options.species.id === 'peony' ||
+    options.species.id === 'ranunculus'
+  ) {
     // A. Swollen Hypanthium (rose hip) urn bridging stem neck to petals
     const hipCount = 5;
     for (let h = 0; h < hipCount; h++) {
@@ -459,8 +464,15 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const petalWidth = Number(genome['petal.width'] ?? 0.45);
 
   let petalPlacements;
-  if (options.species.id === 'rose') {
+  if (options.species.id === 'rose' || options.species.id === 'peony') {
     petalPlacements = roseSpiral({
+      count: petalCount,
+      radius: whorlRadius,
+      tilt: whorlTilt,
+      baseAngle: petalRng.range(0, Math.PI * 2),
+    });
+  } else if (options.species.id === 'ranunculus') {
+    petalPlacements = ranunculusSpiral({
       count: petalCount,
       radius: whorlRadius,
       tilt: whorlTilt,
@@ -568,7 +580,9 @@ export function growPlant(options: GrowPlantOptions): Plant {
       chroma: 0.16,
       hue: 82,
     };
-    const centerPoints = phyllotaxis(floretCount, 0.022 * headScale);
+    const floretRadiusScaling =
+      options.species.id === 'ranunculus' ? 0.006 * headScale : 0.022 * headScale;
+    const centerPoints = phyllotaxis(floretCount, floretRadiusScaling);
 
     for (const pt of centerPoints) {
       const origin: Vec3 = [
@@ -583,6 +597,8 @@ export function growPlant(options: GrowPlantOptions): Plant {
       const binormal = normalizeVec3(crossVec3(normal, tangent));
 
       const birth = stemFinishTime + 0.15 + flowerRng.range(0.0, 0.2);
+      const floretScale =
+        options.species.id === 'ranunculus' ? 0.035 * headScale : 0.05 * headScale;
 
       organs.push({
         id: organId++,
@@ -594,7 +610,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
         normal,
         binormal,
         shape: centerShapeIdx,
-        scale: 0.05 * headScale,
+        scale: floretScale,
         rotation: 0,
         color: {
           light: centerColor.light + flowerRng.range(-0.02, 0.02),

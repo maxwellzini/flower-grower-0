@@ -108,7 +108,7 @@ export function buildInstancedPetalGeometry(
     curveParams[i4 + 1] =
       shape.reflex * (organ.age !== undefined && organ.age >= 0 ? organ.age : 1.0);
     curveParams[i4 + 2] = organ.width ?? 0.5;
-    curveParams[i4 + 3] = shape.baseNarrow;
+    curveParams[i4 + 3] = shape.ruffle;
   }
 
   instanced.setAttribute('iOrigin', new THREE.InstancedBufferAttribute(origins, 3));

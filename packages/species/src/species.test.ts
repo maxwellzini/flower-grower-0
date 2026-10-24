@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { growPlant } from '@flower-grower/core';
 import { daisy } from './daisy.js';
+import { peony } from './peony.js';
+import { ranunculus } from './ranunculus.js';
 import { rose } from './rose.js';
 import { tulip } from './tulip.js';
 import { SPECIES_REGISTRY } from './index.js';
@@ -8,11 +10,13 @@ import { SPECIES_REGISTRY } from './index.js';
 describe('Species Archetypes and Plant Assembly', () => {
   it('registers all initial species in SPECIES_REGISTRY', () => {
     expect(SPECIES_REGISTRY['daisy']).toBe(daisy);
+    expect(SPECIES_REGISTRY['peony']).toBe(peony);
+    expect(SPECIES_REGISTRY['ranunculus']).toBe(ranunculus);
     expect(SPECIES_REGISTRY['rose']).toBe(rose);
     expect(SPECIES_REGISTRY['tulip']).toBe(tulip);
   });
 
-  const speciesList = [daisy, rose, tulip];
+  const speciesList = [daisy, peony, ranunculus, rose, tulip];
 
   for (const sp of speciesList) {
     it(`grows valid deterministic plants across seeds for species "${sp.id}"`, () => {
@@ -71,5 +75,17 @@ describe('Species Archetypes and Plant Assembly', () => {
     // Daisy has central disc florets
     const daisyFlorets = d.organs.filter((o) => o.type === 'center');
     expect(daisyFlorets.length).toBeGreaterThan(40);
+
+    // Peony has voluminous ruffled petals (>= 60)
+    const p = growPlant({ species: peony, seed: 10 });
+    const peonyPetals = p.organs.filter((o) => o.type === 'petal');
+    expect(peonyPetals.length).toBeGreaterThanOrEqual(60);
+
+    // Ranunculus has dense incurved petals (>= 75) plus a compact green button center
+    const ran = growPlant({ species: ranunculus, seed: 10 });
+    const ranPetals = ran.organs.filter((o) => o.type === 'petal');
+    const ranButton = ran.organs.filter((o) => o.type === 'center');
+    expect(ranPetals.length).toBeGreaterThanOrEqual(75);
+    expect(ranButton.length).toBeGreaterThanOrEqual(20);
   });
 });
