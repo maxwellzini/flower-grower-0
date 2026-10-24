@@ -61,58 +61,66 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
         float y = 0.0;
         float z = u;
 
-        // 1. Curving around the center of the flower (transverse / lateral curvature)
-        // iNormal points inward towards the stem axis.
-        // Negative Y moves outward away from the stem axis (creating a concave inner cup cradling the flower center).
-        float cupFactor = sin(u * 3.14159265);
+        // 1. Base concavity / spoon bowl
+        // Deepest at u ~ 0.35, holding the petal's organic volume:
+        float cupFactor = sin(clamp(u / 0.72, 0.0, 1.0) * 3.14159265);
         y -= iCupDepth * (1.0 - v * v) * cupFactor;
 
-        // B. Azimuthal curve around floral cylinder (bending margins inward towards center)
-        z -= 0.32 * (v * v) * (w * w) * (0.3 + iCupDepth);
+        // Azimuthal wrap around floral cylinder
+        z -= 0.30 * (v * v) * (w * w) * (0.2 + iCupDepth);
 
-        // C. Central midrib longitudinal trough/gutter (crisp crease definition for petals & leaves):
-        float midribFurrow = -abs(v) * (1.0 - abs(v)) * 0.16 * max(0.12, iCupDepth) * cupFactor;
-        y += midribFurrow;
-
-        // 2. Longitudinal curvature from base (bottom) to tip (top), varying by plant type
-        if (iMidribBend > 0.1) {
-          // Tulip goblet cup & arched leaf:
-          // Mid-section belly bows OUTWARD (negative Y in local frame where normal points inward):
+        // 2. Species-specific longitudinal & margin curvature:
+        if (iMidribBend > 0.15) {
+          // --- TULIP TEPAL ---
+          // Deep chalice belly bowing outward:
           float belly = sin(u * 3.14159265);
-          y -= iMidribBend * belly * 0.42;
+          y -= iMidribBend * belly * 0.38;
 
-          // Upper rim curves gently INWARD (positive Y) to clasp the top of the goblet:
-          if (u > 0.55) {
-            float inT = (u - 0.55) / 0.45;
-            y += iMidribBend * 0.38 * inT * inT;
-            z -= iMidribBend * 0.12 * inT;
+          // Upper rim curves gently inward to clasp the goblet top:
+          if (u > 0.52) {
+            float inT = (u - 0.52) / 0.48;
+            y += iMidribBend * 0.36 * inT * inT;
+            z -= iMidribBend * 0.14 * inT;
+          }
+
+          // Tulip boat keel (longitudinal V-keel along midrib):
+          float keel = (1.0 - abs(v)) * 0.12 * sin(u * 3.14159265);
+          y -= keel;
+        } else if (iReflex > 0.05) {
+          // --- ROSE PETAL (True botanical recurve & revolute margin) ---
+          if (u > 0.35) {
+            float archT = (u - 0.35) / 0.65;
+            float archAngle = iReflex * archT * archT * 2.2;
+            y -= sin(archAngle) * 0.45 * archT;
+            z -= (1.0 - cos(archAngle)) * 0.32 * archT;
+
+            // A. Revolute lateral wing roll (classic sculpted rose petal shoulders):
+            // The outer upper margins roll backward around the edge:
+            float wingT = smoothstep(0.38, 1.0, abs(v));
+            float rollAngle = wingT * 1.8 * iReflex * archT;
+            y -= sin(rollAngle) * 0.26 * wingT * archT;
+            x *= (1.0 - (1.0 - cos(rollAngle)) * 0.32 * wingT);
+
+            // B. Recurved central apex tip (iconic rose petal quill / triangular crease):
+            float apexCenter = (1.0 - smoothstep(0.0, 0.38, abs(v))) * smoothstep(0.68, 1.0, u);
+            float apexCurl = iReflex * 0.24 * apexCenter;
+            y -= apexCurl * 1.3;
+            z -= apexCurl * 0.7;
           }
         } else {
-          // Daisy & Rose:
-          float midribArc = sin(u * 3.14159265);
-          y -= iMidribBend * midribArc * 0.2;
+          // --- DAISY / LEAF ---
+          float midArc = sin(u * 3.14159265);
+          y -= iMidribBend * midArc * 0.2;
 
-          // Outward reflexed lip (Rose):
-          if (iReflex > 0.03 && u > 0.45) {
-            float refT = (u - 0.45) / 0.55;
-            float reflexAngle = iReflex * refT * refT * 2.5;
-            y -= sin(reflexAngle) * 0.42 * refT;
-            z -= (1.0 - cos(reflexAngle)) * 0.28 * refT;
+          // Gentle central furrow:
+          float furrow = -abs(v) * (1.0 - abs(v)) * 0.14 * midArc;
+          y += furrow;
 
-            // Rose petal edge margin roll:
-            float marginRoll = smoothstep(0.55, 1.0, abs(v)) * iReflex * 0.18 * refT;
-            y -= marginRoll;
-
-            // Rose petal edge cusp/crease at the reflexed margin:
-            float cusp = (1.0 - smoothstep(0.0, 0.25, abs(v))) * smoothstep(0.65, 1.0, u);
-            y -= cusp * 0.08 * iReflex;
-            z -= cusp * 0.06 * iReflex;
-          } else if (iCurlTip > 0.01 && u > 0.65) {
-            // Gentle daisy tip droop:
+          if (iCurlTip > 0.01 && u > 0.65) {
             float curlT = (u - 0.65) / 0.35;
             float curlAngle = iCurlTip * curlT * curlT * 1.5;
-            y -= sin(curlAngle) * 0.18 * curlT;
-            z -= (1.0 - cos(curlAngle)) * 0.12 * curlT;
+            y -= sin(curlAngle) * 0.2 * curlT;
+            z -= (1.0 - cos(curlAngle)) * 0.14 * curlT;
           }
         }
 
@@ -138,16 +146,17 @@ export function createPetalMaterial(): THREE.ShaderMaterial {
 
         vec3 worldPos = iOrigin + (iBinormal * rotX + iNormal * rotY + iTangent * rotZ) * sizeScale;
 
-        // Normal computation taking into account lateral cup, longitudinal slope, and bud rotation
+        // Normal computation taking into account lateral cup, longitudinal slope, and wing roll
         float slopeX = 2.0 * v * iCupDepth;
         float slopeZ = 0.0;
-        if (iMidribBend > 0.1) {
-          slopeZ -= iMidribBend * cos(u * 3.14159265) * 0.42;
-          if (u > 0.55) {
-            slopeZ += iMidribBend * 0.76 * ((u - 0.55) / 0.45);
+        if (iMidribBend > 0.15) {
+          slopeZ -= iMidribBend * cos(u * 3.14159265) * 0.38;
+          if (u > 0.52) {
+            slopeZ += iMidribBend * 0.72 * ((u - 0.52) / 0.48);
           }
-        } else if (iReflex > 0.03 && u > 0.45) {
-          slopeZ -= iReflex * 1.6 * ((u - 0.45) / 0.55);
+        } else if (iReflex > 0.05 && u > 0.35) {
+          slopeZ -= iReflex * 1.8 * ((u - 0.35) / 0.65);
+          slopeX += sign(v) * smoothstep(0.38, 1.0, abs(v)) * iReflex * 1.5;
         }
         vec3 localNorm = normalize(vec3(slopeX, 1.0, -slopeZ));
 

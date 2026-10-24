@@ -68,8 +68,12 @@ export function evalShapePosition(
   let z = clampedU * shape.length;
   let y = 0;
 
-  // 2. Lateral concavity (cup depth)
-  y += shape.cupDepth * (1.0 - clampedV * clampedV) * Math.sin(clampedU * Math.PI);
+  // 2. Base concavity / spoon bowl
+  const cupFactor = Math.sin(Math.min(1.0, clampedU / 0.72) * Math.PI);
+  y -= shape.cupDepth * (1.0 - clampedV * clampedV) * cupFactor;
+
+  // Azimuthal wrap around cylinder
+  z -= 0.3 * (clampedV * clampedV) * (w * w) * (0.2 + shape.cupDepth);
 
   // 3. Margin ruffles
   if (shape.ruffle > 0) {
@@ -78,18 +82,55 @@ export function evalShapePosition(
       shape.ruffle * marginFactor * Math.sin(clampedU * shape.ruffleFreq * Math.PI * 2);
   }
 
-  // 4. Longitudinal curvature: midrib bend and reflex
-  y += shape.midribBend * Math.sin(clampedU * Math.PI * 0.9);
-  y -= shape.reflex * clampedU * clampedU;
+  // 4. Species-specific longitudinal & margin curvature:
+  if (shape.midribBend > 0.15) {
+    // Tulip goblet / arched leaf:
+    const belly = Math.sin(clampedU * Math.PI);
+    y -= shape.midribBend * belly * 0.38;
 
-  // 5. Tip curl
-  if (clampedU > 0.6) {
-    const curlT = (clampedU - 0.6) / 0.4;
-    const curlAngle = shape.curlTip * curlT * curlT;
-    const dy = -Math.sin(curlAngle) * 0.3 * curlT;
-    const dz = -(1.0 - Math.cos(curlAngle)) * 0.2 * curlT;
-    y += dy;
-    z += dz;
+    if (clampedU > 0.52) {
+      const inT = (clampedU - 0.52) / 0.48;
+      y += shape.midribBend * 0.36 * inT * inT;
+      z -= shape.midribBend * 0.14 * inT;
+    }
+
+    const keel = (1.0 - Math.abs(clampedV)) * 0.12 * Math.sin(clampedU * Math.PI);
+    y -= keel;
+  } else if (shape.reflex > 0.05) {
+    // Rose petal revolute wings and recurved apex:
+    if (clampedU > 0.35) {
+      const archT = (clampedU - 0.35) / 0.65;
+      const archAngle = shape.reflex * archT * archT * 2.2;
+      y -= Math.sin(archAngle) * 0.45 * archT;
+      z -= (1.0 - Math.cos(archAngle)) * 0.32 * archT;
+
+      // Revolute wing roll:
+      const wingT = Math.max(0, Math.min(1, (Math.abs(clampedV) - 0.38) / 0.62));
+      const rollAngle = wingT * 1.8 * shape.reflex * archT;
+      y -= Math.sin(rollAngle) * 0.26 * wingT * archT;
+      x *= 1.0 - (1.0 - Math.cos(rollAngle)) * 0.32 * wingT;
+
+      // Recurved apex quill:
+      const apexCenter =
+        (1.0 - Math.min(1.0, Math.abs(clampedV) / 0.38)) *
+        Math.max(0.0, (clampedU - 0.68) / 0.32);
+      const apexCurl = shape.reflex * 0.24 * apexCenter;
+      y -= apexCurl * 1.3;
+      z -= apexCurl * 0.7;
+    }
+  } else {
+    // Daisy / leaf:
+    const midArc = Math.sin(clampedU * Math.PI);
+    y -= shape.midribBend * midArc * 0.2;
+    const furrow = -Math.abs(clampedV) * (1.0 - Math.abs(clampedV)) * 0.14 * midArc;
+    y += furrow;
+
+    if (shape.curlTip > 0.01 && clampedU > 0.65) {
+      const curlT = (clampedU - 0.65) / 0.35;
+      const curlAngle = shape.curlTip * curlT * curlT * 1.5;
+      y -= Math.sin(curlAngle) * 0.2 * curlT;
+      z -= (1.0 - Math.cos(curlAngle)) * 0.14 * curlT;
+    }
   }
 
   // 6. Bud unfurling (openness)

@@ -8,18 +8,20 @@ export type Correlation = (genome: Genome) => Genome;
  * Standard botanical correlations ensuring natural proportions.
  */
 export const defaultCorrelations: Correlation[] = [
-  // 1. More petals -> narrower petals
+  // 1. More petals -> narrower petals (only scale down when count > 21, never blow up wide petals to max limit)
   (genome: Genome): Genome => {
     const count = Number(genome['petal.count'] ?? 21);
     const baseWidth = Number(genome['petal.width'] ?? 0.28);
-    // If petal count is high, scale width down so they overlap naturally
-    const countFactor = Math.sqrt(21 / Math.max(5, count));
-    const newWidth = clamp(
-      baseWidth * countFactor,
-      GENES['petal.width'].min,
-      GENES['petal.width'].max,
-    );
-    return { ...genome, 'petal.width': newWidth };
+    if (count > 21) {
+      const countFactor = Math.sqrt(21 / count);
+      const newWidth = clamp(
+        baseWidth * countFactor,
+        GENES['petal.width'].min,
+        GENES['petal.width'].max,
+      );
+      return { ...genome, 'petal.width': newWidth };
+    }
+    return genome;
   },
 
   // 2. Larger head -> thicker stem tip (peduncle)
@@ -34,13 +36,13 @@ export const defaultCorrelations: Correlation[] = [
     return { ...genome, 'stem.tipRadius': adjustedTip };
   },
 
-  // 3. Lower leaf count -> larger leaves
+  // 3. Lower leaf count -> moderately larger leaves (only if leafLength is relatively small)
   (genome: Genome): Genome => {
     const leafCount = Number(genome['leaf.count'] ?? 6);
     const leafLength = Number(genome['leaf.length'] ?? 0.7);
-    if (leafCount > 0 && leafCount <= 4) {
+    if (leafCount > 0 && leafCount <= 4 && leafLength < 0.9) {
       const adjustedLength = clamp(
-        leafLength * 1.3,
+        leafLength * 1.15,
         GENES['leaf.length'].min,
         GENES['leaf.length'].max,
       );
