@@ -23,29 +23,30 @@ export const tulip: Species = {
   description:
     'Tulipa gesneriana with an erect cupped goblet formed of 6 broad tepals in two whorls.',
   ranges: {
-    'stem.height': { lo: 1.8, hi: 2.6 },
+    'stem.height': { lo: 1.6, hi: 2.8 },
     'stem.baseRadius': { lo: 0.04, hi: 0.055 },
     'stem.tipRadius': { lo: 0.025, hi: 0.035 },
+    'stem.noiseAmp': { lo: 0.05, hi: 0.16 },
     'stem.growSpeed': { lo: 4.5, hi: 6.5 },
     'petal.count': { lo: 6, hi: 6 }, // 6 tepals
-    'petal.length': { lo: 1.15, hi: 1.45 },
-    'petal.width': { lo: 1.05, hi: 1.3 }, // broad overlapping tepals sealing the goblet
-    'petal.cupDepth': { lo: 0.4, hi: 0.5 },
+    'petal.length': { lo: 1.1, hi: 1.55 },
+    'petal.width': { lo: 1.0, hi: 1.4 }, // broad overlapping tepals sealing the goblet
+    'petal.cupDepth': { lo: 0.35, hi: 0.55 },
     'petal.curlTip': { lo: 0.0, hi: 0.0 },
     'petal.reflex': { lo: 0.0, hi: 0.0 },
-    'petal.midribBend': { lo: 0.38, hi: 0.46 },
+    'petal.midribBend': { lo: 0.35, hi: 0.5 },
     'flower.whorlLayers': { lo: 2, hi: 2 }, // 3 inner + 3 outer
-    'flower.whorlTilt': { lo: 1.25, hi: 1.34 }, // erect goblet
-    'flower.whorlRadius': { lo: 0.045, hi: 0.065 }, // snug attachment directly at stem neck
-    'flower.headScale': { lo: 0.95, hi: 1.05 },
+    'flower.whorlTilt': { lo: 1.2, hi: 1.36 }, // erect goblet
+    'flower.whorlRadius': { lo: 0.04, hi: 0.07 }, // snug attachment directly at stem neck
+    'flower.headScale': { lo: 0.88, hi: 1.25 },
     'flower.sepalCount': { lo: 0, hi: 0 }, // no calyx on tulip
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.3, hi: 1.8 },
     'color.petal': {
-      light: [0.55, 0.76],
-      chroma: [0.22, 0.3],
-      hue: [28, 55], // Rich golden orange / scarlet
+      light: [0.45, 0.78],
+      chroma: [0.22, 0.35],
+      hue: [18, 62], // Rich amber golden orange to fiery scarlet
     },
   },
   petalShapes: [TULIP_PETAL_SHAPE],

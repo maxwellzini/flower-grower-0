@@ -349,6 +349,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
   return {
     seed,
     speciesId: options.species.id,
+    genome,
     generatorVersion: 1,
     stems,
     organs,

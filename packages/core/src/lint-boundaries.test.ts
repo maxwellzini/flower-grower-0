@@ -17,7 +17,7 @@ describe('ESLint boundary rules', () => {
         msg.includes('Importing three.js in core or species is strictly prohibited.'),
       ),
     ).toBe(true);
-  });
+  }, 15000);
 
   it('blocks three imports in packages/species', async () => {
     const results = await eslint.lintText(

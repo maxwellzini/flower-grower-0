@@ -129,7 +129,7 @@ function frameCamera(): void {
   controls.update();
 }
 
-function loadPlant(refocus = false): void {
+function loadPlant(refocus = false, preserveTime = true): void {
   if (currentHandle) {
     garden.remove(currentHandle);
   }
@@ -142,7 +142,15 @@ function loadPlant(refocus = false): void {
 
   currentHandle = garden.add(currentPlant);
   updateTelemetry(currentPlant);
-  setTime(currentTime);
+
+  if (preserveTime && currentPlant) {
+    const targetTime =
+      currentTime > 0 ? Math.min(currentTime, currentPlant.duration) : currentPlant.duration;
+    setTime(targetTime);
+  } else if (currentPlant) {
+    setTime(0);
+  }
+
   renderGeneSliders();
 
   if (refocus) {
@@ -209,31 +217,34 @@ window.addEventListener('keydown', (e) => {
 });
 
 // Seed controls
-inputSeed.addEventListener('change', () => {
-  currentSeed = parseInt(inputSeed.value, 10) || 42;
+function handleSeedChange(newSeed: number): void {
+  currentSeed = Math.max(1, newSeed);
+  inputSeed.value = currentSeed.toString();
   currentOverrides = {};
-  loadPlant(true);
+  loadPlant(false, true);
+}
+
+inputSeed.addEventListener('change', () => {
+  handleSeedChange(parseInt(inputSeed.value, 10) || 42);
+});
+
+inputSeed.addEventListener('input', () => {
+  const val = parseInt(inputSeed.value, 10);
+  if (!Number.isNaN(val) && val > 0 && val !== currentSeed) {
+    handleSeedChange(val);
+  }
 });
 
 btnSeedDec.addEventListener('click', () => {
-  currentSeed = Math.max(1, currentSeed - 1);
-  inputSeed.value = currentSeed.toString();
-  currentOverrides = {};
-  loadPlant(true);
+  handleSeedChange(currentSeed - 1);
 });
 
 btnSeedInc.addEventListener('click', () => {
-  currentSeed += 1;
-  inputSeed.value = currentSeed.toString();
-  currentOverrides = {};
-  loadPlant(true);
+  handleSeedChange(currentSeed + 1);
 });
 
 btnRandomizeSeed.addEventListener('click', () => {
-  currentSeed = Math.floor(Math.random() * 99999) + 1;
-  inputSeed.value = currentSeed.toString();
-  currentOverrides = {};
-  loadPlant(true);
+  handleSeedChange(Math.floor(Math.random() * 99999) + 1);
 });
 
 btnMutate.addEventListener('click', () => {
@@ -241,7 +252,7 @@ btnMutate.addEventListener('click', () => {
   const baseGenome = sample(activeSpecies, rng);
   const merged: Genome = Object.assign({}, baseGenome, currentOverrides);
   currentOverrides = mutate(merged, 0.25, rng);
-  loadPlant();
+  loadPlant(false, true);
 });
 
 // Species selector
@@ -313,15 +324,20 @@ function renderGeneSliders(): void {
     const range = activeSpecies.ranges[geneKey];
     const lo = range && 'lo' in range ? range.lo : def.min;
     const hi = range && 'hi' in range ? range.hi : def.max;
-    const currentVal =
-      currentOverrides[geneKey] !== undefined
-        ? Number(currentOverrides[geneKey])
+
+    const isOverridden = currentOverrides[geneKey] !== undefined;
+    const currentVal = isOverridden
+      ? Number(currentOverrides[geneKey])
+      : currentPlant?.genome && currentPlant.genome[geneKey] !== undefined
+        ? Number(currentPlant.genome[geneKey])
         : (lo + hi) * 0.5;
 
     row.innerHTML = `
       <div class="gene-slider-label">
-        <span class="gene-slider-name">${def.name}</span>
-        <span id="val-${geneKey}" class="gene-slider-val">${def.kind === 'int' ? Math.round(currentVal) : currentVal.toFixed(2)}</span>
+        <span class="gene-slider-name">${def.name} ${isOverridden ? '<span style="color: #fbbf24; font-size: 10px;">(manual)</span>' : ''}</span>
+        <span id="val-${geneKey}" class="gene-slider-val" style="${isOverridden ? 'color: #fbbf24;' : ''}">
+          ${def.kind === 'int' ? Math.round(currentVal) : currentVal.toFixed(2)}
+        </span>
       </div>
       <input
         type="range"
@@ -341,7 +357,7 @@ function renderGeneSliders(): void {
         def.kind === 'int' ? parseInt(slider.value, 10) : parseFloat(slider.value);
       valDisplay.textContent = def.kind === 'int' ? `${v}` : v.toFixed(2);
       currentOverrides[geneKey] = v;
-      loadPlant();
+      loadPlant(false, true);
     });
 
     geneSlidersContainer.appendChild(row);
@@ -375,9 +391,9 @@ function createSeedThumbnail(plant: Plant): string {
   const tipNode = mainStem?.nodes[mainStem.nodes.length - 1];
   const headHeight = tipNode ? tipNode.pos[1] : 2.2;
 
-  // Higher angle camera elevated above flower head, looking downward to capture full head & petals
-  thumbCamera.position.set(0, headHeight + 1.3, 2.6);
-  thumbCamera.lookAt(0, headHeight - 0.15, 0);
+  // 3/4 oblique perspective framing both stem posture and flower head
+  thumbCamera.position.set(1.4, headHeight * 0.7 + 0.6, 2.8);
+  thumbCamera.lookAt(0, headHeight * 0.55, 0);
 
   const h = thumbGarden.add(plant);
   h.setTime(plant.duration);
@@ -423,7 +439,8 @@ function renderContactSheet(): void {
       inputSeed.value = s.toString();
       currentOverrides = {};
       switchToLab();
-      loadPlant();
+      loadPlant(true, true);
+      setTime(p.duration);
     });
 
     contactSheetGrid.appendChild(card);

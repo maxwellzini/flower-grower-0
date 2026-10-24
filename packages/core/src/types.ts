@@ -87,6 +87,7 @@ export interface PlantBounds {
 export interface Plant {
   seed: number;
   speciesId: string;
+  genome?: Record<string, number | string | ColorGene>;
   generatorVersion?: number;
   stems: Stem[];
   organs: Organ[];
