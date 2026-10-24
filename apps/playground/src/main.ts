@@ -295,7 +295,6 @@ document.querySelectorAll('[data-cs-species]').forEach((btn) => {
 const toggleInk = document.getElementById('toggle-ink') as HTMLInputElement | null;
 const toggleWobble = document.getElementById('toggle-wobble') as HTMLInputElement | null;
 const toggleVeins = document.getElementById('toggle-veins') as HTMLInputElement | null;
-const togglePaper = document.getElementById('toggle-paper') as HTMLInputElement | null;
 
 function syncStyle(): void {
   garden.setStyle({
@@ -303,7 +302,7 @@ function syncStyle(): void {
     inkEdges: toggleInk?.checked ?? true,
     wobble: toggleWobble?.checked ? 1.0 : 0.0,
     veins: toggleVeins?.checked ?? true,
-    paper: togglePaper?.checked ?? false,
+    paper: false,
   });
 }
 
@@ -318,7 +317,7 @@ function updateStylePresetButtons(name: string): void {
   });
 }
 
-[toggleInk, toggleWobble, toggleVeins, togglePaper].forEach((el) => {
+[toggleInk, toggleWobble, toggleVeins].forEach((el) => {
   el?.addEventListener('change', () => {
     syncStyle();
     const isBotanical = (toggleInk?.checked ?? false) || (toggleVeins?.checked ?? false);
@@ -333,14 +332,12 @@ document.querySelectorAll('[data-style-preset]').forEach((btn) => {
       if (toggleInk) toggleInk.checked = true;
       if (toggleWobble) toggleWobble.checked = true;
       if (toggleVeins) toggleVeins.checked = true;
-      if (togglePaper) togglePaper.checked = false;
       syncStyle();
       updateStylePresetButtons('botanical');
     } else if (preset === 'minimal') {
       if (toggleInk) toggleInk.checked = false;
       if (toggleWobble) toggleWobble.checked = false;
       if (toggleVeins) toggleVeins.checked = false;
-      if (togglePaper) togglePaper.checked = false;
       garden.setStyle('minimal');
       updateStylePresetButtons('minimal');
     }

@@ -119,18 +119,7 @@ export class BotanicalPass {
 
           vec3 inkedColor = mix(cCenter.rgb, uInkColor, edge * 0.75);
           float outAlpha = cCenter.a;
-
-          if (uPaper > 0.5) {
-            // Antique botanical paper texture
-            float grain = (fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.025;
-            vec2 vigCoord = vUv * 2.0 - 1.0;
-            float vig = 1.0 - dot(vigCoord, vigCoord) * 0.06;
-            vec3 paper = (uPaperColor + vec3(grain)) * vig;
-            vec3 finalRgb = mix(paper, inkedColor, outAlpha);
-            gl_FragColor = vec4(finalRgb, 1.0);
-          } else {
-            gl_FragColor = vec4(inkedColor, outAlpha);
-          }
+          gl_FragColor = vec4(inkedColor, outAlpha);
         }
       `,
       depthTest: false,
