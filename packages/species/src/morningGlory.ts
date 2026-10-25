@@ -24,7 +24,7 @@ export const morningGlory: Species = {
     'vine.wWander': { lo: 0.05, hi: 0.12 },
     'vine.stepLength': { lo: 0.04, hi: 0.08 },
     'vine.pBranch': { lo: 0.1, hi: 0.3 },
-    'vine.flowerDensity': { lo: 0.15, hi: 0.35 },
+    'vine.flowerDensity': { lo: 0.12, hi: 0.22 },
     'petal.count': { lo: 4, hi: 8 }, // Flared sympetalous trumpet lobes
     'petal.length': { lo: 0.65, hi: 0.95 },
     'petal.width': { lo: 0.45, hi: 0.72 },

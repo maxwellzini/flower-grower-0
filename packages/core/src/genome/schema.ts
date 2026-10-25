@@ -185,9 +185,9 @@ export const GENES = {
     name: 'vine.flowerDensity',
     group: 'flower',
     kind: 'float',
-    min: 0.05,
-    max: 0.8,
-    default: 0.25,
+    min: 0.04,
+    max: 0.5,
+    default: 0.18,
     description: 'Density of flowers along the vine nodes',
   },
 

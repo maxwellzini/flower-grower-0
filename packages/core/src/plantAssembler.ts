@@ -26,7 +26,7 @@ import {
   whorls,
   type WhorlPetalPlacement,
 } from './organs/placement.js';
-import { addVec3, cleanZero, crossVec3, normalizeVec3, scaleVec3 } from './math.js';
+import { addVec3, cleanZero, crossVec3, distanceVec3, normalizeVec3, scaleVec3 } from './math.js';
 
 function transformFrame(v: Vec3, fX: Vec3, fY: Vec3, fZ: Vec3): Vec3 {
   return [
@@ -90,7 +90,12 @@ function assembleVine(params: {
   const petalLen = Number(genome['petal.length'] ?? 0.55);
   const petalWid = Number(genome['petal.width'] ?? 0.45);
   const headScale = Number(genome['flower.headScale'] ?? 1.0);
-  const flowerDensity = Number(genome['vine.flowerDensity'] ?? 0.25);
+  const flowerDensity = Number(genome['vine.flowerDensity'] ?? 0.18);
+
+  // Clearance tracking to prevent any flower overlap based on bloom diameter
+  const placedFlowers: { pos: Vec3; radius: number }[] = [];
+  const flowerRadius = petalLen * headScale;
+  const clearanceMultiplier = Math.max(1.15, 1.85 - flowerDensity * 1.5);
 
   const minCoord: Vec3 = [Infinity, Infinity, Infinity];
   const maxCoord: Vec3 = [-Infinity, -Infinity, -Infinity];
@@ -156,12 +161,32 @@ function assembleVine(params: {
       }
 
       // 2. Attach flowers at eligible nodes along the vine
-      const isFlowerNode = isMain
-        ? (i >= 8 && i % 8 === 0 && flowerRng.next() < flowerDensity * 3.5)
-        : (i === Math.floor(stem.nodes.length * 0.6) && flowerRng.next() < 0.6);
+      const isEligibleNode = isMain
+        ? (i >= 8 && i <= stem.nodes.length - 4 && i % 4 === 0)
+        : (i >= 6 && i <= stem.nodes.length - 4 && i % 6 === 0);
 
-      if (isFlowerNode) {
+      const candidateRoll = flowerRng.next() < Math.min(0.85, flowerDensity * 2.8);
+
+      if (isEligibleNode && candidateRoll) {
         const flowerOrigin = addVec3(node.pos, scaleVec3(outVec, 0.1));
+
+        // Spatial clearance check: ensure blooms never overlap
+        let overlaps = false;
+        for (const existing of placedFlowers) {
+          const d = distanceVec3(flowerOrigin, existing.pos);
+          const reqDist = (flowerRadius + existing.radius) * clearanceMultiplier;
+          if (d < reqDist) {
+            overlaps = true;
+            break;
+          }
+        }
+
+        if (overlaps) {
+          continue;
+        }
+
+        placedFlowers.push({ pos: flowerOrigin, radius: flowerRadius });
+
         const flowerDir = normalizeVec3(addVec3(outVec, [0, 0.4, 0]));
         const upRef: Vec3 = Math.abs(flowerDir[1]) < 0.92 ? [0, 1, 0] : [0, 0, 1];
         const fX = normalizeVec3(crossVec3(flowerDir, upRef));

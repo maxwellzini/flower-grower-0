@@ -56,42 +56,44 @@ const btnCopyTrellisCode = document.getElementById('btn-copy-trellis-code');
 const TRELLIS_PRESETS: Record<string, Vec3[][]> = {
   arch: [
     [
-      [-1.3, 0, 0],
-      [-1.15, 1.4, 0],
-      [-0.75, 2.5, 0],
-      [0, 3.1, 0],
-      [0.75, 2.5, 0],
-      [1.15, 1.4, 0],
-      [1.3, 0, 0],
+      [-2.1, 0, 0],
+      [-2.0, 1.6, 0],
+      [-1.6, 3.2, 0],
+      [-0.9, 4.2, 0],
+      [0, 4.6, 0],
+      [0.9, 4.2, 0],
+      [1.6, 3.2, 0],
+      [2.0, 1.6, 0],
+      [2.1, 0, 0],
     ],
   ],
   pole: [
     [
       [0, 0, 0],
-      [0, 1.2, 0],
-      [0, 2.4, 0],
-      [0, 3.6, 0],
+      [0, 1.6, 0],
+      [0, 3.4, 0],
+      [0, 5.2, 0],
     ],
   ],
   zigzag: [
     [
-      [-0.85, 0, 0],
-      [0.85, 0.9, 0],
-      [-0.85, 1.8, 0],
-      [0.85, 2.7, 0],
-      [0, 3.6, 0],
+      [-1.4, 0, 0],
+      [1.4, 1.3, 0],
+      [-1.4, 2.6, 0],
+      [1.4, 3.9, 0],
+      [0, 5.2, 0],
     ],
   ],
   spiral: [
     (() => {
       const pts: Vec3[] = [];
-      const turns = 3.2;
-      const steps = 40;
+      const turns = 3.6;
+      const steps = 48;
       for (let s = 0; s <= steps; s++) {
         const t = s / steps;
         const theta = t * Math.PI * 2 * turns;
-        const r = (1 - t * 0.55) * 0.8;
-        pts.push([r * Math.cos(theta), t * 3.6, r * Math.sin(theta)]);
+        const r = (1 - t * 0.45) * 1.3;
+        pts.push([r * Math.cos(theta), t * 5.2, r * Math.sin(theta)]);
       }
       return pts;
     })(),
@@ -101,10 +103,10 @@ const TRELLIS_PRESETS: Record<string, Vec3[][]> = {
 let activeGuide: GrowthGuide = { paths: TRELLIS_PRESETS['arch']! };
 let isDrawMode = false;
 let customPathPoints: Vec3[] = [
-  [-0.6, 0, 0],
-  [-0.2, 1.2, 0],
-  [0.3, 2.2, 0],
-  [0.6, 3.4, 0],
+  [-1.0, 0, 0],
+  [-0.4, 1.8, 0],
+  [0.5, 3.4, 0],
+  [0.9, 5.0, 0],
 ];
 
 // 1. Setup Three.js scene & renderer
@@ -129,7 +131,7 @@ controls.dampingFactor = 0.05;
 controls.target.set(0, 1.4, 0);
 controls.maxPolarAngle = Math.PI / 2 + 0.1;
 controls.minDistance = 0.5;
-controls.maxDistance = 15;
+controls.maxDistance = 35;
 
 // Subtle ground contact shadow
 const shadowCanvas = document.createElement('canvas');
@@ -218,7 +220,7 @@ function updateTrellisMesh(): void {
     if (path.length < 2) continue;
     const curvePoints = path.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
     const curve = new THREE.CatmullRomCurve3(curvePoints);
-    const tubeGeo = new THREE.TubeGeometry(curve, Math.max(20, path.length * 8), 0.026, 8, false);
+    const tubeGeo = new THREE.TubeGeometry(curve, Math.max(20, path.length * 8), 0.034, 8, false);
     const tubeMesh = new THREE.Mesh(tubeGeo, trellisMat);
     trellisMeshGroup.add(tubeMesh);
   }
@@ -229,8 +231,8 @@ let isTrellisTab = false;
 function frameCamera(): void {
   if (!currentPlant) return;
   if (isTrellisTab) {
-    controls.target.set(0, 1.7, 0);
-    camera.position.set(0.0, 1.8, 5.8);
+    controls.target.set(0, 2.3, 0);
+    camera.position.set(0.0, 2.4, 9.2);
   } else {
     const tipY = currentPlant.stems[0]?.nodes.slice(-1)[0]?.pos[1] ?? 2.0;
     controls.target.set(0, tipY * 0.6, 0);
@@ -652,6 +654,7 @@ function switchToLab(): void {
   controlPanel.style.display = 'flex';
   trellisPanel.style.display = 'none';
   isDrawMode = false;
+  shadowMesh.scale.set(1.0, 1.0, 1.0);
   if (trellisDrawHint) trellisDrawHint.style.display = 'none';
   loadPlant(true, true);
 }
@@ -665,9 +668,10 @@ function switchToTrellis(): void {
   controlPanel.style.display = 'none';
   trellisPanel.style.display = 'flex';
 
-  controls.target.set(0, 1.7, 0);
-  camera.position.set(0.0, 1.8, 5.8);
+  controls.target.set(0, 2.3, 0);
+  camera.position.set(0.0, 2.4, 9.2);
   controls.update();
+  shadowMesh.scale.set(3.5, 3.5, 3.5);
   loadPlant(false, true);
 }
 

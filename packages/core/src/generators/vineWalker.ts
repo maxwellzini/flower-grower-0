@@ -128,7 +128,8 @@ export function vineWalker(
   for (let pIdx = 0; pIdx < paths.length; pIdx++) {
     const polyline = new PolylineTracker(paths[pIdx]!);
     const totalPathLength = polyline.totalLength;
-    const initialVigor = Math.min(totalPathLength * 1.35, params.maxVigor ?? 5.5);
+    const defaultMaxVigor = Math.max(8.0, totalPathLength * 1.4 + 2.0);
+    const initialVigor = Math.min(totalPathLength * 1.4, params.maxVigor ?? defaultMaxVigor);
 
     const mainStemId = nextStemId++;
     const mainNodes: StemNode[] = [];

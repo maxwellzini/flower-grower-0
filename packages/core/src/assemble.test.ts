@@ -131,4 +131,57 @@ describe('Daisy Assembly and Shape Evaluation', () => {
     const sepalScales = new Set(sepals.map((s) => s.scale.toFixed(4)));
     expect(sepalScales.size).toBeGreaterThan(1);
   });
+
+  it('enforces spatial clearance and size-based separation between vine flowers', () => {
+    const longTrellis = {
+      paths: [
+        [
+          [0, 0, 0] as [number, number, number],
+          [0, 2, 0] as [number, number, number],
+          [0, 4, 0] as [number, number, number],
+          [0, 6, 0] as [number, number, number],
+        ],
+      ],
+    };
+
+    const climbingSpecies = {
+      id: 'rose',
+      name: 'Rose',
+      generator: 'straight' as const,
+      ranges: {
+        'petal.count': { lo: 10, hi: 10 },
+        'petal.length': { lo: 0.8, hi: 0.8 },
+        'flower.headScale': { lo: 1.0, hi: 1.0 },
+        'vine.flowerDensity': { lo: 0.35, hi: 0.35 },
+      },
+      petalShapes: [DAISY_PETAL_SHAPE],
+    };
+
+    const plant = growPlant({ species: climbingSpecies, guide: longTrellis, seed: 99 });
+    // Group petals by stemNode to identify individual flower heads
+    const petals = plant.organs.filter((o) => o.type === 'petal');
+    const flowersByNode = new Map<number, typeof petals>();
+    for (const p of petals) {
+      if (!flowersByNode.has(p.stemNode)) {
+        flowersByNode.set(p.stemNode, []);
+      }
+      flowersByNode.get(p.stemNode)!.push(p);
+    }
+
+    const flowerOrigins = Array.from(flowersByNode.values()).map((headPetals) => headPetals[0]!.origin);
+    expect(flowerOrigins.length).toBeGreaterThan(1);
+
+    // Verify all flowers maintain clearance (no overlap): dist >= 2 * petal.length * 1.15
+    const flowerRadius = 0.8;
+    for (let i = 0; i < flowerOrigins.length; i++) {
+      for (let j = i + 1; j < flowerOrigins.length; j++) {
+        const d = Math.hypot(
+          flowerOrigins[i]![0] - flowerOrigins[j]![0],
+          flowerOrigins[i]![1] - flowerOrigins[j]![1],
+          flowerOrigins[i]![2] - flowerOrigins[j]![2],
+        );
+        expect(d).toBeGreaterThanOrEqual(flowerRadius * 2 * 1.15);
+      }
+    }
+  });
 });
