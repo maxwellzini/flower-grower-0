@@ -17,7 +17,7 @@ moving on. Set the status to `Awaiting review` and ask the user.
 | 3 | Single flower, minimal render | Done | No | 2026-10-23 | 2026-10-23 | f72d718 | |
 | 4 | Genome and species v1 | Done | Yes (contact sheet) | 2026-10-23 | 2026-10-23 | b1e6dd6, f408a18 | |
 | 5 | Botanical style | Done | Yes (look) | 2026-10-24 | 2026-10-24 | 2509aef, c07c368 | |
-| 6 | Vines and the trellis | Done | No | 2026-10-24 | 2026-10-24 | 1586747 | |
+| 6 | Vines and the trellis | Done | No | 2026-10-24 | 2026-10-25 | 1586747, f442ee1, ad72b89 | |
 | 7 | Garden scale | Not started | No | | | | |
 | 8 | Overlay and DOM guides | Not started | No | | | | |
 | 9 | More generators and species | Not started | Yes (contact sheets) | | | | |
