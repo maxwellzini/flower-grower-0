@@ -7,7 +7,7 @@ export const ROSE_PETAL_SHAPE: OrganShape = {
   tip: 'notch', // authentic heart-shaped apical cleft flanked by two soft rounded lobes
   tipSharpness: 0.1,
   baseNarrow: 0.35,
-  cupDepth: 0.32,
+  cupDepth: 0.10,
   curlTip: 0.18,
   reflex: 0.35,
   ruffle: 0.025,
@@ -32,7 +32,7 @@ export const rose: Species = {
     'petal.count': { lo: 38, hi: 54 },
     'petal.length': { lo: 0.85, hi: 1.15 },
     'petal.width': { lo: 0.76, hi: 0.94 }, // authentic broad fan/obcordate proportions
-    'petal.cupDepth': { lo: 0.28, hi: 0.38 }, // deep spoon-shaped cradle
+    'petal.cupDepth': { lo: 0.04, hi: 0.18 },
     'petal.curlTip': { lo: 0.15, hi: 0.25 },
     'petal.reflex': { lo: 0.38, hi: 0.54 }, // sculpted revolute margins
     'petal.midribBend': { lo: 0.0, hi: 0.03 },

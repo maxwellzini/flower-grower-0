@@ -28,7 +28,7 @@ export const morningGlory: Species = {
     'petal.count': { lo: 4, hi: 8 }, // Flared sympetalous trumpet lobes
     'petal.length': { lo: 0.65, hi: 0.95 },
     'petal.width': { lo: 0.45, hi: 0.72 },
-    'petal.cupDepth': { lo: 0.32, hi: 0.52 },
+    'petal.cupDepth': { lo: 0.05, hi: 0.22 },
     'petal.curlTip': { lo: 0.08, hi: 0.2 },
     'petal.reflex': { lo: 0.1, hi: 0.28 },
     'petal.midribBend': { lo: 0.15, hi: 0.32 },

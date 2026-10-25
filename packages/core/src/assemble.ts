@@ -114,7 +114,7 @@ export const MORNING_GLORY_COROLLA_SHAPE: OrganShape = {
   tip: 'round',
   tipSharpness: 0.2,
   baseNarrow: 0.82,
-  cupDepth: 0.48,
+  cupDepth: 0.12,
   curlTip: 0.12,
   reflex: 0.18,
   ruffle: 0.05,

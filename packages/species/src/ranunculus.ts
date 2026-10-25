@@ -7,12 +7,12 @@ export const RANUNCULUS_PETAL_SHAPE: OrganShape = {
   tip: 'round',
   tipSharpness: 0.1,
   baseNarrow: 0.35,
-  cupDepth: 0.5, // Deep incurved shell
+  cupDepth: 0.12,
   curlTip: 0.0,
   reflex: 0.0,
   ruffle: 0.015,
   ruffleFreq: 2.5,
-  midribBend: 0.38, // Inward clasping rim
+  midribBend: 0.22,
   veinCount: 5,
   veinDepth: 0.015,
 };
@@ -32,10 +32,10 @@ export const ranunculus: Species = {
     'petal.count': { lo: 90, hi: 125 },
     'petal.length': { lo: 0.58, hi: 0.78 },
     'petal.width': { lo: 0.72, hi: 0.88 }, // nearly circular spoon
-    'petal.cupDepth': { lo: 0.46, hi: 0.58 }, // very deep spherical bowl
+    'petal.cupDepth': { lo: 0.05, hi: 0.22 },
     'petal.curlTip': { lo: 0.0, hi: 0.0 },
     'petal.reflex': { lo: 0.0, hi: 0.0 },
-    'petal.midribBend': { lo: 0.35, hi: 0.46 },
+    'petal.midribBend': { lo: 0.16, hi: 0.28 },
     'flower.whorlLayers': { lo: 7, hi: 8 },
     'flower.whorlTilt': { lo: 1.12, hi: 1.24 }, // erect incurved spherical chalice
     'flower.whorlRadius': { lo: 0.075, hi: 0.10 },

@@ -7,7 +7,7 @@ export const PEONY_PETAL_SHAPE: OrganShape = {
   tip: 'round',
   tipSharpness: 0.1,
   baseNarrow: 0.35,
-  cupDepth: 0.36,
+  cupDepth: 0.12,
   curlTip: 0.15,
   reflex: 0.28,
   ruffle: 0.075, // heavily ruffled, fluttering crinkled margins
@@ -32,7 +32,7 @@ export const peony: Species = {
     'petal.count': { lo: 75, hi: 105 },
     'petal.length': { lo: 1.05, hi: 1.35 },
     'petal.width': { lo: 0.82, hi: 0.98 },
-    'petal.cupDepth': { lo: 0.32, hi: 0.44 },
+    'petal.cupDepth': { lo: 0.04, hi: 0.20 },
     'petal.curlTip': { lo: 0.12, hi: 0.22 },
     'petal.reflex': { lo: 0.26, hi: 0.40 },
     'petal.midribBend': { lo: 0.02, hi: 0.08 },

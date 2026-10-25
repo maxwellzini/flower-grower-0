@@ -192,15 +192,22 @@
       }
 
       .species-pills {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
         width: 100%;
       }
 
+      .contact-sheet-header .species-pills {
+        display: flex;
+        flex-wrap: wrap;
+        width: auto;
+      }
+
       .species-pill {
-        flex: 1 1 calc(33.333% - 6px);
-        min-width: 68px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--panel-border);
         border-radius: var(--radius-sm);
@@ -208,11 +215,16 @@
         font-family: inherit;
         font-size: 11.5px;
         font-weight: 500;
-        padding: 6px 4px;
+        padding: 7px 8px;
         text-align: center;
         cursor: pointer;
         transition: all 0.15s ease;
         white-space: nowrap;
+      }
+
+      .contact-sheet-header .species-pill {
+        flex: 0 0 auto;
+        padding: 6px 10px;
       }
 
       .species-pill:hover {
