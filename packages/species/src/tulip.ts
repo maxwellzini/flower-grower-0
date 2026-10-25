@@ -43,8 +43,8 @@ export const tulip: Species = {
     'flower.sepalCount': { lo: 0, hi: 0 }, // no calyx on tulip
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets
     'leaf.count': { lo: 2, hi: 3 },
-    'leaf.length': { lo: 1.1, hi: 1.5 },
-    'leaf.width': { lo: 0.42, hi: 0.58 },
+    'leaf.length': { lo: 0.55, hi: 0.82 },
+    'leaf.width': { lo: 0.22, hi: 0.34 },
     'leaf.tilt': { lo: 0.45, hi: 0.65 },
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.3, hi: 1.8 },

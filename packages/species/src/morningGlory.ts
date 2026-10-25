@@ -40,8 +40,8 @@ export const morningGlory: Species = {
     'flower.centerDome': { lo: 0.02, hi: 0.04 },
     'flower.sepalCount': { lo: 5, hi: 5 },
     'leaf.count': { lo: 4, hi: 8 },
-    'leaf.length': { lo: 0.55, hi: 0.85 },
-    'leaf.width': { lo: 0.45, hi: 0.75 },
+    'leaf.length': { lo: 0.28, hi: 0.44 },
+    'leaf.width': { lo: 0.22, hi: 0.35 },
     'leaf.tilt': { lo: 0.4, hi: 0.75 },
     'color.petal': {
       light: [0.45, 0.65],

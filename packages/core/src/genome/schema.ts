@@ -355,6 +355,15 @@ export const GENES = {
     default: 0,
     description: 'Number of calyx sepals supporting the flower receptacle',
   },
+  'flower.sepalScale': {
+    name: 'flower.sepalScale',
+    group: 'flower',
+    kind: 'float',
+    min: 0.15,
+    max: 0.8,
+    default: 0.38,
+    description: 'Scale multiplier of calyx sepals relative to petal length',
+  },
 
   // Foliage / Leaf genes
   'leaf.count': {

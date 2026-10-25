@@ -41,11 +41,12 @@ export const ranunculus: Species = {
     'flower.whorlRadius': { lo: 0.075, hi: 0.10 },
     'flower.headScale': { lo: 0.85, hi: 1.05 }, // compact dense sphere
     'flower.sepalCount': { lo: 5, hi: 5 },
+    'flower.sepalScale': { lo: 0.30, hi: 0.42 },
     'flower.floretCount': { lo: 30, hi: 45 }, // prominent green button eye!
     'flower.centerDome': { lo: 0.018, hi: 0.028 },
     'leaf.count': { lo: 3, hi: 5 },
-    'leaf.length': { lo: 0.4, hi: 0.6 },
-    'leaf.width': { lo: 0.22, hi: 0.32 },
+    'leaf.length': { lo: 0.20, hi: 0.32 },
+    'leaf.width': { lo: 0.11, hi: 0.18 },
     'leaf.tilt': { lo: 0.6, hi: 0.85 },
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.4, hi: 1.9 },

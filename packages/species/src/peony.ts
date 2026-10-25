@@ -41,10 +41,11 @@ export const peony: Species = {
     'flower.whorlRadius': { lo: 0.11, hi: 0.16 },
     'flower.headScale': { lo: 1.35, hi: 1.65 }, // massive 1.5x scale distinct from rose
     'flower.sepalCount': { lo: 5, hi: 5 },
+    'flower.sepalScale': { lo: 0.32, hi: 0.44 },
     'flower.floretCount': { lo: 0, hi: 0 },
     'leaf.count': { lo: 4, hi: 6 },
-    'leaf.length': { lo: 0.55, hi: 0.8 },
-    'leaf.width': { lo: 0.3, hi: 0.44 },
+    'leaf.length': { lo: 0.30, hi: 0.46 },
+    'leaf.width': { lo: 0.17, hi: 0.26 },
     'leaf.tilt': { lo: 0.6, hi: 0.85 },
     'growth.petalGrowDur': { lo: 1.1, hi: 1.5 },
     'growth.petalOpenDur': { lo: 1.5, hi: 2.0 },

@@ -41,10 +41,11 @@ export const rose: Species = {
     'flower.whorlRadius': { lo: 0.09, hi: 0.13 },
     'flower.headScale': { lo: 0.95, hi: 1.15 },
     'flower.sepalCount': { lo: 5, hi: 5 },
+    'flower.sepalScale': { lo: 0.34, hi: 0.46 },
     'flower.floretCount': { lo: 0, hi: 0 }, // no disc florets in rose
     'leaf.count': { lo: 4, hi: 7 },
-    'leaf.length': { lo: 0.45, hi: 0.65 },
-    'leaf.width': { lo: 0.26, hi: 0.38 },
+    'leaf.length': { lo: 0.28, hi: 0.42 },
+    'leaf.width': { lo: 0.16, hi: 0.25 },
     'leaf.tilt': { lo: 0.55, hi: 0.8 },
     'growth.petalGrowDur': { lo: 1.0, hi: 1.4 },
     'growth.petalOpenDur': { lo: 1.4, hi: 1.9 },

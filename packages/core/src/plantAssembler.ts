@@ -24,8 +24,17 @@ import {
   roseSpiral,
   tulipWhorls,
   whorls,
+  type WhorlPetalPlacement,
 } from './organs/placement.js';
 import { addVec3, cleanZero, crossVec3, normalizeVec3, scaleVec3 } from './math.js';
+
+function transformFrame(v: Vec3, fX: Vec3, fY: Vec3, fZ: Vec3): Vec3 {
+  return [
+    cleanZero(fX[0] * v[0] + fY[0] * v[1] + fZ[0] * v[2]),
+    cleanZero(fX[1] * v[0] + fY[1] * v[1] + fZ[1] * v[2]),
+    cleanZero(fX[2] * v[0] + fY[2] * v[1] + fZ[2] * v[2]),
+  ];
+}
 
 function computeStemFrameAtNode(
   nodes: readonly StemNode[],
@@ -75,8 +84,9 @@ function assembleVine(params: {
     hue: 95,
   };
 
-  const leafLen = Number(genome['leaf.length'] ?? 0.45);
-  const leafWid = Number(genome['leaf.width'] ?? 0.42);
+  const leafLen = Number(genome['leaf.length'] ?? 0.35);
+  const leafWid = Number(genome['leaf.width'] ?? 0.28);
+  const leafTilt = Number(genome['leaf.tilt'] ?? 0.65);
   const petalLen = Number(genome['petal.length'] ?? 0.55);
   const petalWid = Number(genome['petal.width'] ?? 0.45);
   const headScale = Number(genome['flower.headScale'] ?? 1.0);
@@ -130,7 +140,7 @@ function assembleVine(params: {
           binormal: leafBinormal,
           shape: 1, // leaf shape
           scale: leafLen * leafRng.range(0.85, 1.15),
-          rotation: angle,
+          rotation: leafTilt,
           color: {
             light: leafColor.light + leafRng.range(-0.02, 0.02),
             chroma: leafColor.chroma,
@@ -145,7 +155,7 @@ function assembleVine(params: {
         });
       }
 
-      // 2. Attach trumpet flowers at eligible nodes along the vine
+      // 2. Attach flowers at eligible nodes along the vine
       const isFlowerNode = isMain
         ? (i >= 8 && i % 8 === 0 && flowerRng.next() < flowerDensity * 3.5)
         : (i === Math.floor(stem.nodes.length * 0.6) && flowerRng.next() < 0.6);
@@ -153,151 +163,253 @@ function assembleVine(params: {
       if (isFlowerNode) {
         const flowerOrigin = addVec3(node.pos, scaleVec3(outVec, 0.1));
         const flowerDir = normalizeVec3(addVec3(outVec, [0, 0.4, 0]));
-        const fUp: Vec3 = Math.abs(flowerDir[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
-        const fNormal = normalizeVec3(crossVec3(flowerDir, fUp));
-        const fBinormal = crossVec3(flowerDir, fNormal);
+        const upRef: Vec3 = Math.abs(flowerDir[1]) < 0.92 ? [0, 1, 0] : [0, 0, 1];
+        const fX = normalizeVec3(crossVec3(flowerDir, upRef));
+        const fZ = normalizeVec3(crossVec3(fX, flowerDir));
+        const fY = flowerDir;
 
         const fStagger = flowerRng.range(0.0, 0.2);
         const fBirth = node.birth + 0.25 + fStagger;
 
         // Placements tailored to the climbing species
         const petalCount = Math.max(3, Math.round(Number(genome['petal.count'] ?? 5)));
+        const whorlLayers = Math.max(1, Math.round(Number(genome['flower.whorlLayers'] ?? 1)));
         const whorlTilt = Number(genome['flower.whorlTilt'] ?? 0.38);
+        const whorlRadius = Number(genome['flower.whorlRadius'] ?? 0.08);
 
-        let placements: { angle: number; tilt: number; scale: number }[] = [];
+        let placements: WhorlPetalPlacement[] = [];
         if (species.id === 'rose' || species.id === 'peony') {
           placements = roseSpiral({
             count: petalCount,
-            radius: 0.04 * headScale,
+            radius: whorlRadius * headScale,
             tilt: whorlTilt,
             baseAngle: flowerRng.range(0, Math.PI * 2),
           });
         } else if (species.id === 'ranunculus') {
           placements = ranunculusSpiral({
             count: petalCount,
-            radius: 0.04 * headScale,
+            radius: whorlRadius * headScale,
             tilt: whorlTilt,
             baseAngle: flowerRng.range(0, Math.PI * 2),
           });
         } else if (species.id === 'tulip') {
           placements = tulipWhorls({
-            radius: 0.04 * headScale,
-            tilt: 1.3,
+            radius: whorlRadius * headScale,
+            tilt: whorlTilt,
             baseAngle: flowerRng.range(0, Math.PI * 2),
           });
         } else if (species.id === 'daisy') {
           placements = whorls({
             count: petalCount,
-            layers: 2,
+            layers: whorlLayers,
             sizeFalloff: 0.92,
-            tilt: 0.25,
-            radius: 0.06 * headScale,
+            tilt: whorlTilt,
+            radius: whorlRadius * headScale,
           });
         } else {
           // Morning glory or trumpet/funnel corolla lobes
           for (let k = 0; k < petalCount; k++) {
             placements.push({
+              layer: 0,
+              indexInLayer: k,
+              totalIndex: k,
               angle: (k * Math.PI * 2) / petalCount,
               tilt: whorlTilt,
               scale: 1.0,
+              offset: [0, 0, 0],
+              yaw: 0,
             });
           }
         }
 
-        for (const p of placements) {
-          const lobeAngle = p.angle;
-          const tilt = p.tilt;
-          const cosA = Math.cos(lobeAngle);
-          const sinA = Math.sin(lobeAngle);
+        const staggerAmount = Number(genome['growth.stagger'] ?? 0.16);
 
-          const radialDir = addVec3(scaleVec3(fNormal, cosA), scaleVec3(fBinormal, sinA));
+        for (const p of placements) {
+          const angle = p.angle;
+          const tilt = p.tilt;
+          const yaw = p.yaw ?? 0;
+
+          const cosAngle = Math.cos(angle);
+          const sinAngle = Math.sin(angle);
+          const cosYaw = Math.cos(yaw);
+          const sinYaw = Math.sin(yaw);
+
+          // Heading in canonical XZ plane
+          const hX = cosAngle * cosYaw - sinAngle * sinYaw;
+          const hZ = sinAngle * cosYaw + cosAngle * sinYaw;
+
+          // Transverse width in canonical XZ plane (binormal)
+          const wX = -cosAngle * sinYaw - sinAngle * cosYaw;
+          const wZ = -sinAngle * sinYaw + cosAngle * cosYaw;
+
           const cosTilt = Math.cos(tilt);
           const sinTilt = Math.sin(tilt);
 
-          const lobeTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, cosTilt), scaleVec3(radialDir, sinTilt)));
-          const lobeNormal = normalizeVec3(crossVec3(radialDir, flowerDir));
-          const lobeBinormal = crossVec3(lobeTangent, lobeNormal);
+          const canTangent: Vec3 = [
+            cleanZero(hX * cosTilt),
+            cleanZero(sinTilt),
+            cleanZero(hZ * cosTilt),
+          ];
+          const canNormal: Vec3 = [
+            cleanZero(-hX * sinTilt),
+            cleanZero(cosTilt),
+            cleanZero(-hZ * sinTilt),
+          ];
+          const canBinormal: Vec3 = [cleanZero(wX), 0, cleanZero(wZ)];
+
+          const worldTangent = normalizeVec3(transformFrame(canTangent, fX, fY, fZ));
+          const worldNormal = normalizeVec3(transformFrame(canNormal, fX, fY, fZ));
+          const worldBinormal = normalizeVec3(transformFrame(canBinormal, fX, fY, fZ));
+
+          const offset = p.offset ?? [0, 0, 0];
+          const worldOffset = transformFrame(offset, fX, fY, fZ);
+          const petalOrigin: Vec3 = [
+            flowerOrigin[0] + worldOffset[0] * headScale,
+            flowerOrigin[1] + worldOffset[1] * headScale,
+            flowerOrigin[2] + worldOffset[2] * headScale,
+          ];
+
+          const stagger = petalRng.range(0.0, staggerAmount);
+          const birth = fBirth + stagger + p.layer * 0.08;
+          const layerFrac = whorlLayers > 1 ? p.layer / (whorlLayers - 1) : 0;
+          const reflexFactor = Math.max(0.0, 1.0 - layerFrac * 1.35);
 
           organs.push({
             id: organId++,
             type: 'petal',
             stemId: stem.id,
             stemNode: i,
-            origin: flowerOrigin,
-            tangent: lobeTangent,
-            normal: lobeNormal,
-            binormal: lobeBinormal,
+            origin: petalOrigin,
+            tangent: worldTangent,
+            normal: worldNormal,
+            binormal: worldBinormal,
             shape: 0,
             scale: petalLen * headScale * (p.scale ?? 1.0),
-            rotation: lobeAngle,
+            rotation: tilt,
             color: {
               light: petalColor.light + petalRng.range(-0.02, 0.02),
               chroma: petalColor.chroma,
               hue: petalColor.hue + petalRng.range(-4, 4),
             },
-            birth: fBirth,
+            birth,
             growDuration: 0.55,
             openDuration: 0.65,
             openness0: 1.0,
-            age: 0,
+            age: reflexFactor,
             width: petalWid * headScale * (p.scale ?? 1.0),
           });
         }
 
-        // Calyx sepals
+        // Calyx sepals on vine
         const sepalCount = Math.round(
           Number(genome['flower.sepalCount'] ?? (species.id === 'tulip' ? 0 : 5)),
         );
+        const sepalBaseScale = Number(genome['flower.sepalScale'] ?? 0.38);
         for (let s = 0; s < sepalCount; s++) {
-          const sepalAngle = (s * Math.PI * 2) / Math.max(1, sepalCount) + 0.35;
-          const sRad = addVec3(scaleVec3(fNormal, Math.cos(sepalAngle)), scaleVec3(fBinormal, Math.sin(sepalAngle)));
-          const sTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, 0.7), scaleVec3(sRad, 0.3)));
-          const sNormal = normalizeVec3(crossVec3(sRad, flowerDir));
-          const sBinormal = crossVec3(sTangent, sNormal);
+          const sepalAngle = (s * Math.PI * 2) / Math.max(1, sepalCount) + 0.18;
+          const sepalTilt = -0.42;
+          const cosAngle = Math.cos(sepalAngle);
+          const sinAngle = Math.sin(sepalAngle);
+          const cosTilt = Math.cos(sepalTilt);
+          const sinTilt = Math.sin(sepalTilt);
+
+          const canOrigin: Vec3 = [
+            cleanZero(cosAngle * 0.04 * headScale),
+            cleanZero(-0.02 * headScale),
+            cleanZero(sinAngle * 0.04 * headScale),
+          ];
+          const canTangent: Vec3 = [
+            cleanZero(cosAngle * cosTilt),
+            cleanZero(sinTilt),
+            cleanZero(sinAngle * cosTilt),
+          ];
+          const canNormal: Vec3 = [
+            cleanZero(-cosAngle * sinTilt),
+            cleanZero(cosTilt),
+            cleanZero(-sinAngle * sinTilt),
+          ];
+          const canBinormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
+
+          const worldOrigin = addVec3(flowerOrigin, transformFrame(canOrigin, fX, fY, fZ));
+          const worldTangent = normalizeVec3(transformFrame(canTangent, fX, fY, fZ));
+          const worldNormal = normalizeVec3(transformFrame(canNormal, fX, fY, fZ));
+          const worldBinormal = normalizeVec3(transformFrame(canBinormal, fX, fY, fZ));
+
+          const sepalVar = flowerRng.range(0.85, 1.15);
 
           organs.push({
             id: organId++,
             type: 'sepal',
             stemId: stem.id,
             stemNode: i,
-            origin: flowerOrigin,
-            tangent: sTangent,
-            normal: sNormal,
-            binormal: sBinormal,
+            origin: worldOrigin,
+            tangent: worldTangent,
+            normal: worldNormal,
+            binormal: worldBinormal,
             shape: 2, // sepal shape
-            scale: petalLen * 0.38 * headScale,
-            rotation: sepalAngle,
+            scale: petalLen * sepalBaseScale * headScale * sepalVar,
+            rotation: sepalTilt,
             color: { light: 0.32, chroma: 0.16, hue: 130 },
             birth: fBirth - 0.1,
             growDuration: 0.35,
             openDuration: 0.2,
-            openness0: 0.2,
-            age: 0,
+            openness0: 0.7,
+            age: 1.0,
+            width: 0.25 * flowerRng.range(0.88, 1.12),
           });
         }
 
-        // Center / stamen throat
+        // Center / stamen throat / disc florets
         const floretCount = Math.round(Number(genome['flower.floretCount'] ?? 0));
         if (floretCount > 0) {
-          organs.push({
-            id: organId++,
-            type: 'center',
-            stemId: stem.id,
-            stemNode: i,
-            origin: addVec3(flowerOrigin, scaleVec3(flowerDir, 0.05)),
-            tangent: flowerDir,
-            normal: fNormal,
-            binormal: fBinormal,
-            shape: 3,
-            scale: 0.045 * headScale,
-            rotation: 0,
-            color: centerColor,
-            birth: fBirth + 0.1,
-            growDuration: 0.3,
-            openDuration: 0.2,
-            openness0: 0.5,
-            age: 0,
-          });
+          const domeHeight = Number(genome['flower.centerDome'] ?? 0.04);
+          const floretRadiusScaling =
+            species.id === 'ranunculus' ? 0.006 * headScale : 0.022 * headScale;
+          const centerPoints = phyllotaxis(floretCount, floretRadiusScaling);
+
+          for (const pt of centerPoints) {
+            const canOrigin: Vec3 = [
+              pt.pos[0],
+              0.02 + Math.max(0, domeHeight - pt.radius * 0.3),
+              pt.pos[2],
+            ];
+            const ptAngle = pt.angle;
+            const canTangent: Vec3 = [Math.cos(ptAngle), 0.2, Math.sin(ptAngle)];
+            const canNormal: Vec3 = [0, 1, 0];
+            const canBinormal = normalizeVec3(crossVec3(canNormal, canTangent));
+
+            const worldOrigin = addVec3(flowerOrigin, transformFrame(canOrigin, fX, fY, fZ));
+            const worldTangent = normalizeVec3(transformFrame(canTangent, fX, fY, fZ));
+            const worldNormal = normalizeVec3(transformFrame(canNormal, fX, fY, fZ));
+            const worldBinormal = normalizeVec3(transformFrame(canBinormal, fX, fY, fZ));
+
+            const floretScale =
+              species.id === 'ranunculus' ? 0.035 * headScale : 0.05 * headScale;
+
+            organs.push({
+              id: organId++,
+              type: 'center',
+              stemId: stem.id,
+              stemNode: i,
+              origin: worldOrigin,
+              tangent: worldTangent,
+              normal: worldNormal,
+              binormal: worldBinormal,
+              shape: 3,
+              scale: floretScale,
+              rotation: 0,
+              color: {
+                light: centerColor.light + flowerRng.range(-0.02, 0.02),
+                chroma: centerColor.chroma + flowerRng.range(-0.01, 0.01),
+                hue: centerColor.hue + flowerRng.range(-2, 2),
+              },
+              birth: fBirth + 0.1,
+              growDuration: 0.3,
+              openDuration: 0.2,
+              openness0: 0.5,
+              age: 0,
+            });
+          }
         }
       }
     }
@@ -660,7 +772,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
         normal: normalizeVec3(normal),
         binormal,
         shape: hipShapeIdx,
-        scale: 0.14 * headScale,
+        scale: 0.12 * headScale * flowerRng.range(0.92, 1.08),
         rotation: 0.1,
         color: {
           light: sepalColor.light * 0.9,
@@ -677,6 +789,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
     }
 
     // B. Reflexed laciniate calyx sepals
+    const sepalBaseScale = Number(genome['flower.sepalScale'] ?? 0.38);
     for (let i = 0; i < sepalCount; i++) {
       const angle = (i * 2 * Math.PI) / sepalCount + 0.18;
       const tilt = -0.42; // reflexed downward
@@ -703,6 +816,8 @@ export function growPlant(options: GrowPlantOptions): Plant {
       ];
       const binormal: Vec3 = [cleanZero(-sinAngle), 0, cleanZero(cosAngle)];
 
+      const sepalVar = flowerRng.range(0.85, 1.15);
+
       organs.push({
         id: organId++,
         type: 'sepal',
@@ -713,7 +828,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
         normal,
         binormal,
         shape: sepalShapeIdx,
-        scale: petalLength * 0.72 * headScale,
+        scale: petalLength * sepalBaseScale * headScale * sepalVar,
         rotation: tilt,
         color: sepalColor,
         birth: stemFinishTime,
@@ -721,7 +836,7 @@ export function growPlant(options: GrowPlantOptions): Plant {
         openDuration: petalOpenDur * 0.6,
         openness0: 0.7,
         age: 1.0,
-        width: 0.28,
+        width: 0.25 * flowerRng.range(0.88, 1.12),
       });
     }
   } else if (sepalCount > 0) {
