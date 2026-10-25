@@ -8,15 +8,15 @@ import {
 export const morningGlory: Species = {
   id: 'morning-glory',
   name: 'Morning Glory',
-  generator: 'vine',
+  generator: 'straight',
   description:
-    'Vigorous twining climbing vine (Ipomoea tricolor) with flared trumpet-shaped flowers in vibrant celestial blue and lush cordate leaves.',
+    'Ipomoea tricolor with flared trumpet-shaped flowers in vibrant celestial blue, alternating cordate leaves, and a twining habit.',
   ranges: {
-    'stem.height': { lo: 2.5, hi: 4.5 },
-    'stem.baseRadius': { lo: 0.025, hi: 0.045 },
-    'stem.tipRadius': { lo: 0.012, hi: 0.022 },
-    'stem.noiseAmp': { lo: 0.04, hi: 0.12 },
-    'stem.growSpeed': { lo: 3.5, hi: 5.5 },
+    'stem.height': { lo: 1.8, hi: 2.8 },
+    'stem.baseRadius': { lo: 0.032, hi: 0.048 },
+    'stem.tipRadius': { lo: 0.016, hi: 0.026 },
+    'stem.noiseAmp': { lo: 0.06, hi: 0.16 },
+    'stem.growSpeed': { lo: 4.0, hi: 6.0 },
     'vine.helixRadius': { lo: 0.05, hi: 0.16 },
     'vine.helixPitch': { lo: 0.35, hi: 0.65 },
     'vine.wFollow': { lo: 0.7, hi: 0.95 },
@@ -25,21 +25,24 @@ export const morningGlory: Species = {
     'vine.stepLength': { lo: 0.04, hi: 0.08 },
     'vine.pBranch': { lo: 0.1, hi: 0.3 },
     'vine.flowerDensity': { lo: 0.15, hi: 0.35 },
-    'petal.count': { lo: 5, hi: 5 }, // 5-lobed sympetalous trumpet corolla
-    'petal.length': { lo: 0.45, hi: 0.75 },
-    'petal.width': { lo: 0.35, hi: 0.55 },
-    'petal.cupDepth': { lo: 0.35, hi: 0.55 },
+    'petal.count': { lo: 4, hi: 8 }, // Flared sympetalous trumpet lobes
+    'petal.length': { lo: 0.65, hi: 0.95 },
+    'petal.width': { lo: 0.45, hi: 0.72 },
+    'petal.cupDepth': { lo: 0.32, hi: 0.52 },
     'petal.curlTip': { lo: 0.08, hi: 0.2 },
     'petal.reflex': { lo: 0.1, hi: 0.28 },
     'petal.midribBend': { lo: 0.15, hi: 0.32 },
-    'flower.headScale': { lo: 0.85, hi: 1.25 },
+    'flower.whorlLayers': { lo: 1, hi: 1 },
+    'flower.whorlTilt': { lo: 0.38, hi: 0.58 },
+    'flower.whorlRadius': { lo: 0.035, hi: 0.065 },
+    'flower.headScale': { lo: 0.9, hi: 1.3 },
     'flower.floretCount': { lo: 5, hi: 5 }, // Stamen throat centers
     'flower.centerDome': { lo: 0.02, hi: 0.04 },
     'flower.sepalCount': { lo: 5, hi: 5 },
-    'leaf.count': { lo: 12, hi: 28 },
-    'leaf.length': { lo: 0.35, hi: 0.65 },
-    'leaf.width': { lo: 0.32, hi: 0.58 },
-    'leaf.tilt': { lo: 0.4, hi: 0.8 },
+    'leaf.count': { lo: 4, hi: 8 },
+    'leaf.length': { lo: 0.55, hi: 0.85 },
+    'leaf.width': { lo: 0.45, hi: 0.75 },
+    'leaf.tilt': { lo: 0.4, hi: 0.75 },
     'color.petal': {
       light: [0.45, 0.65],
       chroma: [0.18, 0.28],
@@ -53,7 +56,7 @@ export const morningGlory: Species = {
     'color.leaf': {
       light: [0.35, 0.46],
       chroma: [0.14, 0.22],
-      hue: [130, 146], // Deep rich vine foliage green
+      hue: [130, 146], // Deep rich foliage green
     },
   },
   petalShapes: [MORNING_GLORY_COROLLA_SHAPE],

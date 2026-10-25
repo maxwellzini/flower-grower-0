@@ -7,12 +7,12 @@ export const TULIP_PETAL_SHAPE: OrganShape = {
   tip: 'round',
   tipSharpness: 0.15,
   baseNarrow: 0.35,
-  cupDepth: 0.38, // Concave chalice shell
+  cupDepth: 0.12, // Subtle gentle chalice cup (under 0.20)
   curlTip: 0.0,
   reflex: 0.0,
   ruffle: 0.0,
   ruffleFreq: 1.0,
-  midribBend: 0.38, // Classic outward belly bow + inward rim clasp
+  midribBend: 0.30, // Natural outward belly bow
   veinCount: 5,
   veinDepth: 0.02,
 };
@@ -32,10 +32,10 @@ export const tulip: Species = {
     'petal.count': { lo: 6, hi: 6 }, // 6 tepals
     'petal.length': { lo: 1.05, hi: 1.35 },
     'petal.width': { lo: 0.7, hi: 0.84 }, // broad tepals seamlessly cupping goblet
-    'petal.cupDepth': { lo: 0.38, hi: 0.48 },
+    'petal.cupDepth': { lo: 0.08, hi: 0.16 }, // Kept under 0.20
     'petal.curlTip': { lo: 0.0, hi: 0.0 },
     'petal.reflex': { lo: 0.0, hi: 0.0 },
-    'petal.midribBend': { lo: 0.38, hi: 0.48 },
+    'petal.midribBend': { lo: 0.26, hi: 0.34 },
     'flower.whorlLayers': { lo: 2, hi: 2 }, // 3 inner + 3 outer
     'flower.whorlTilt': { lo: 1.28, hi: 1.36 }, // erect goblet
     'flower.whorlRadius': { lo: 0.042, hi: 0.055 }, // snug attachment directly at stem neck

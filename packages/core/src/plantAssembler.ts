@@ -160,16 +160,61 @@ function assembleVine(params: {
         const fStagger = flowerRng.range(0.0, 0.2);
         const fBirth = node.birth + 0.25 + fStagger;
 
-        // 5 flared trumpet corolla lobes
-        const numLobes = 5;
-        for (let k = 0; k < numLobes; k++) {
-          const lobeAngle = (k * Math.PI * 2) / numLobes;
+        // Placements tailored to the climbing species
+        const petalCount = Math.max(3, Math.round(Number(genome['petal.count'] ?? 5)));
+        const whorlTilt = Number(genome['flower.whorlTilt'] ?? 0.38);
+
+        let placements: { angle: number; tilt: number; scale: number }[] = [];
+        if (species.id === 'rose' || species.id === 'peony') {
+          placements = roseSpiral({
+            count: petalCount,
+            radius: 0.04 * headScale,
+            tilt: whorlTilt,
+            baseAngle: flowerRng.range(0, Math.PI * 2),
+          });
+        } else if (species.id === 'ranunculus') {
+          placements = ranunculusSpiral({
+            count: petalCount,
+            radius: 0.04 * headScale,
+            tilt: whorlTilt,
+            baseAngle: flowerRng.range(0, Math.PI * 2),
+          });
+        } else if (species.id === 'tulip') {
+          placements = tulipWhorls({
+            radius: 0.04 * headScale,
+            tilt: 1.3,
+            baseAngle: flowerRng.range(0, Math.PI * 2),
+          });
+        } else if (species.id === 'daisy') {
+          placements = whorls({
+            count: petalCount,
+            layers: 2,
+            sizeFalloff: 0.92,
+            tilt: 0.25,
+            radius: 0.06 * headScale,
+          });
+        } else {
+          // Morning glory or trumpet/funnel corolla lobes
+          for (let k = 0; k < petalCount; k++) {
+            placements.push({
+              angle: (k * Math.PI * 2) / petalCount,
+              tilt: whorlTilt,
+              scale: 1.0,
+            });
+          }
+        }
+
+        for (const p of placements) {
+          const lobeAngle = p.angle;
+          const tilt = p.tilt;
           const cosA = Math.cos(lobeAngle);
           const sinA = Math.sin(lobeAngle);
 
           const radialDir = addVec3(scaleVec3(fNormal, cosA), scaleVec3(fBinormal, sinA));
-          // Flare outward at ~28 degrees from flowerDir
-          const lobeTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, 0.88), scaleVec3(radialDir, 0.48)));
+          const cosTilt = Math.cos(tilt);
+          const sinTilt = Math.sin(tilt);
+
+          const lobeTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, cosTilt), scaleVec3(radialDir, sinTilt)));
           const lobeNormal = normalizeVec3(crossVec3(radialDir, flowerDir));
           const lobeBinormal = crossVec3(lobeTangent, lobeNormal);
 
@@ -182,8 +227,8 @@ function assembleVine(params: {
             tangent: lobeTangent,
             normal: lobeNormal,
             binormal: lobeBinormal,
-            shape: 0, // corolla shape
-            scale: petalLen * headScale,
+            shape: 0,
+            scale: petalLen * headScale * (p.scale ?? 1.0),
             rotation: lobeAngle,
             color: {
               light: petalColor.light + petalRng.range(-0.02, 0.02),
@@ -195,13 +240,16 @@ function assembleVine(params: {
             openDuration: 0.65,
             openness0: 1.0,
             age: 0,
-            width: petalWid * headScale,
+            width: petalWid * headScale * (p.scale ?? 1.0),
           });
         }
 
-        // Calyx sepals (5 green bracts clasping the flower base)
-        for (let s = 0; s < 5; s++) {
-          const sepalAngle = (s * Math.PI * 2) / 5 + 0.35;
+        // Calyx sepals
+        const sepalCount = Math.round(
+          Number(genome['flower.sepalCount'] ?? (species.id === 'tulip' ? 0 : 5)),
+        );
+        for (let s = 0; s < sepalCount; s++) {
+          const sepalAngle = (s * Math.PI * 2) / Math.max(1, sepalCount) + 0.35;
           const sRad = addVec3(scaleVec3(fNormal, Math.cos(sepalAngle)), scaleVec3(fBinormal, Math.sin(sepalAngle)));
           const sTangent = normalizeVec3(addVec3(scaleVec3(flowerDir, 0.7), scaleVec3(sRad, 0.3)));
           const sNormal = normalizeVec3(crossVec3(sRad, flowerDir));
@@ -229,25 +277,28 @@ function assembleVine(params: {
         }
 
         // Center / stamen throat
-        organs.push({
-          id: organId++,
-          type: 'center',
-          stemId: stem.id,
-          stemNode: i,
-          origin: addVec3(flowerOrigin, scaleVec3(flowerDir, 0.06)),
-          tangent: flowerDir,
-          normal: fNormal,
-          binormal: fBinormal,
-          shape: 3,
-          scale: 0.04 * headScale,
-          rotation: 0,
-          color: centerColor,
-          birth: fBirth + 0.1,
-          growDuration: 0.3,
-          openDuration: 0.2,
-          openness0: 0.5,
-          age: 0,
-        });
+        const floretCount = Math.round(Number(genome['flower.floretCount'] ?? 0));
+        if (floretCount > 0) {
+          organs.push({
+            id: organId++,
+            type: 'center',
+            stemId: stem.id,
+            stemNode: i,
+            origin: addVec3(flowerOrigin, scaleVec3(flowerDir, 0.05)),
+            tangent: flowerDir,
+            normal: fNormal,
+            binormal: fBinormal,
+            shape: 3,
+            scale: 0.045 * headScale,
+            rotation: 0,
+            color: centerColor,
+            birth: fBirth + 0.1,
+            growDuration: 0.3,
+            openDuration: 0.2,
+            openness0: 0.5,
+            age: 0,
+          });
+        }
       }
     }
   }
@@ -317,7 +368,12 @@ export function growPlant(options: GrowPlantOptions): Plant {
   const noiseAmp = Number(genome['stem.noiseAmp'] ?? 0.07);
   const growSpeed = Number(genome['stem.growSpeed'] ?? 5.5);
 
-  const isVine = options.species.generator === 'vine';
+  const isVine = Boolean(
+    (options.guide?.paths &&
+      options.guide.paths.length > 0 &&
+      options.guide.paths[0]!.length >= 2) ||
+      options.species.generator === 'vine',
+  );
   const stems = isVine
     ? vineWalker(
         options.guide,

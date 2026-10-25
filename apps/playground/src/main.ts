@@ -201,9 +201,8 @@ function updateTrellisMesh(): void {
     }
   }
 
-  const isVine = activeSpecies.generator === 'vine';
-  const showMesh = toggleTrellisMesh?.checked ?? true;
-  if (!isVine || !showMesh || !activeGuide?.paths) {
+  const showMesh = isTrellisTab && (toggleTrellisMesh?.checked ?? true);
+  if (!showMesh || !activeGuide?.paths) {
     trellisMeshGroup.visible = false;
     return;
   }
@@ -225,9 +224,11 @@ function updateTrellisMesh(): void {
   }
 }
 
+let isTrellisTab = false;
+
 function frameCamera(): void {
   if (!currentPlant) return;
-  if (activeSpecies.generator === 'vine') {
+  if (isTrellisTab) {
     controls.target.set(0, 1.7, 0);
     camera.position.set(0.0, 1.8, 5.8);
   } else {
@@ -243,7 +244,7 @@ function loadPlant(refocus = false, preserveTime = true): void {
     garden.remove(currentHandle);
   }
 
-  const guide = activeSpecies.generator === 'vine' ? activeGuide : undefined;
+  const guide = isTrellisTab ? activeGuide : undefined;
 
   currentPlant = growPlant({
     species: activeSpecies,
@@ -377,7 +378,11 @@ function selectSpecies(spId: string): void {
 
   document.querySelectorAll('.species-pill').forEach((pill) => {
     const p = pill as HTMLElement;
-    if (p.dataset.species === spId || p.dataset.csSpecies === spId) {
+    if (
+      p.dataset.species === spId ||
+      p.dataset.csSpecies === spId ||
+      p.dataset.trellisSpecies === spId
+    ) {
       p.classList.add('active');
     } else {
       p.classList.remove('active');
@@ -400,6 +405,13 @@ document.querySelectorAll('[data-species]').forEach((btn) => {
 document.querySelectorAll('[data-cs-species]').forEach((btn) => {
   btn.addEventListener('click', (e) => {
     const sp = (e.currentTarget as HTMLElement).dataset.csSpecies;
+    if (sp) selectSpecies(sp);
+  });
+});
+
+document.querySelectorAll('[data-trellis-species]').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    const sp = (e.currentTarget as HTMLElement).dataset.trellisSpecies;
     if (sp) selectSpecies(sp);
   });
 });
@@ -632,6 +644,7 @@ function renderContactSheet(): void {
 }
 
 function switchToLab(): void {
+  isTrellisTab = false;
   tabLab.classList.add('active');
   tabTrellis.classList.remove('active');
   tabContactSheet.classList.remove('active');
@@ -640,9 +653,11 @@ function switchToLab(): void {
   trellisPanel.style.display = 'none';
   isDrawMode = false;
   if (trellisDrawHint) trellisDrawHint.style.display = 'none';
+  loadPlant(true, true);
 }
 
 function switchToTrellis(): void {
+  isTrellisTab = true;
   tabTrellis.classList.add('active');
   tabLab.classList.remove('active');
   tabContactSheet.classList.remove('active');
@@ -650,9 +665,6 @@ function switchToTrellis(): void {
   controlPanel.style.display = 'none';
   trellisPanel.style.display = 'flex';
 
-  if (activeSpecies.id !== 'morning-glory') {
-    selectSpecies('morning-glory');
-  }
   controls.target.set(0, 1.7, 0);
   camera.position.set(0.0, 1.8, 5.8);
   controls.update();
@@ -660,6 +672,7 @@ function switchToTrellis(): void {
 }
 
 function switchToContactSheet(): void {
+  isTrellisTab = false;
   tabContactSheet.classList.add('active');
   tabLab.classList.remove('active');
   tabTrellis.classList.remove('active');
